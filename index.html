@@ -122,6 +122,18 @@
   .template-name{text-align:center;font-family:'Gaegu',cursive;font-size:.95rem;margin-top:4px;}
   .template-shots{text-align:center;font-family:'Patrick Hand',cursive;font-size:.75rem;color:var(--ink-soft);}
 
+  /* ---- Coming Soon (locked/unavailable) template card ---- */
+  .template-card.locked{cursor:default;background:
+    repeating-linear-gradient(135deg, var(--paper) 0 10px, var(--paper-deep) 10px 20px);}
+  .template-card.locked:active{transform:none;}
+  .coming-soon-thumb{position:relative;width:100%;border-radius:6px;overflow:hidden;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    border:2px dashed var(--ink-soft);background:rgba(255,255,255,.5);}
+  .coming-soon-thumb .cs-lock{font-size:1.7rem;filter:grayscale(1) opacity(.75);}
+  .coming-soon-thumb .cs-label{font-family:'Gaegu',cursive;font-weight:700;font-size:.8rem;
+    color:var(--ink-soft);letter-spacing:.5px;}
+  .template-name.locked-name,.template-shots.locked-shots{color:var(--ink-soft);opacity:.75;}
+
   /* ============ SCENE 3 : BOOTH / CAMERA ============ */
   #scene-booth{gap:8px;}
   /* SKINZ standard viewfinder display ratio (638:436). NOTE: this is NOT the same ratio as the
@@ -160,9 +172,25 @@
   .flip-btn{border:2.4px solid var(--ink);border-radius:50%;width:44px;height:44px;font-size:1.1rem;
     background:var(--paper);box-shadow:2px 2px 0 var(--ink);}
   .flip-btn:active{transform:translate(1px,1px);}
-  #nextToDecorateBtn{display:none;}
-  #nextToDecorateBtn.show{display:inline-block;}
   #shootBtn.hide{display:none;}
+
+  /* ============ SCENE 3.5 : PRINTING / EJECT ANIMATION ============ */
+  #scene-print{gap:14px;justify-content:center;}
+  .printer-body{position:relative;width:100%;max-width:300px;margin:0 auto;}
+  .printer-svg{width:100%;display:block;position:relative;z-index:2;}
+  .printer-slot-mask{position:relative;width:88%;margin:-4px auto 0;overflow:hidden;
+    border:2.6px solid var(--ink);border-top:none;border-radius:0 0 10px 10px;
+    background:#111;z-index:1;box-shadow:0 6px 0 rgba(0,0,0,.08);}
+  .print-strip{position:relative;width:100%;height:100%;transform:translateY(-100%);}
+  .print-strip.eject{animation:printEject 2.4s cubic-bezier(.22,.75,.2,1) forwards;}
+  @keyframes printEject{
+    0%{transform:translateY(-100%);}
+    70%{transform:translateY(2%);}
+    100%{transform:translateY(0%);}
+  }
+  .print-strip canvas{display:block;width:100%;height:100%;}
+  .print-hint{font-family:'Gaegu',cursive;font-size:1rem;color:var(--ink-soft);text-align:center;}
+  #printNextBtn[disabled]{opacity:.35;}
 
   /* ============ SCENE 4 : DIY DECORATE ============ */
   #scene-decorate{gap:10px;}
@@ -359,9 +387,30 @@
   <div class="shutter-row">
     <button class="flip-btn" id="flipCamBtn" title="flip camera">⟳</button>
     <button class="btn" id="shootBtn">📷 Take Photo (1/4)</button>
-    <button class="btn" id="nextToDecorateBtn">Next: Decorate →</button>
   </div>
   <p class="shot-count" id="shotCount">Captured 0 / 4</p>
+</section>
+
+<!-- ============================================================ -->
+<!-- SCENE 3.5 : PRINTING — eject animation between booth and decorate -->
+<!-- ============================================================ -->
+<section class="scene" id="scene-print">
+  <h2 class="scene-title" id="printTitle">printing your memory ✧</h2>
+
+  <div class="printer-body">
+    <svg class="printer-svg" viewBox="0 0 300 70" preserveAspectRatio="none" style="filter:url(#wobble1)">
+      <rect class="hand-fill" x="6" y="6" width="288" height="46" rx="14"/>
+      <rect x="26" y="44" width="248" height="10" rx="4" fill="var(--ink)"/>
+      <circle cx="34" cy="26" r="4" fill="var(--red)"/>
+      <circle cx="50" cy="26" r="4" fill="var(--blue)"/>
+    </svg>
+    <div class="printer-slot-mask" id="printerSlotMask">
+      <div class="print-strip" id="printStrip"></div>
+    </div>
+  </div>
+
+  <p class="print-hint" id="printHint">printing…</p>
+  <button class="btn" id="printNextBtn" disabled>Next: Decorate →</button>
 </section>
 
 <!-- ============================================================ -->
@@ -463,7 +512,7 @@ shopTV.addEventListener('error', function() {
 playShopMV();
 
   /* ---------------- scene switching ---------------- */
-  var sceneNames = ['outside','lobby','template','booth','decorate','result'];
+  var sceneNames = ['outside','lobby','template','booth','print','decorate','result'];
   var scenes = {};
   sceneNames.forEach(function(n){ scenes[n] = document.getElementById('scene-'+n); });
   function showScene(name){
@@ -602,17 +651,45 @@ playShopMV();
     var card = document.createElement('div');
     card.className = 'template-card'+(t.comingSoon ? ' locked' : '');
     card.dataset.id = t.id;
-    
+
+    if(t.comingSoon){
+      // never touch t.frameMask/t.poses here — nothing is loaded, so no path can ever leak into the UI
+      // (derived directly from the layout name rather than the LAYOUTS map, which isn't defined
+      // yet at this point in the script — this runs synchronously as templates are built)
+      var csAspect = (t.layout === 'grid2x3') ? '1200/1800' : '800/2400';
+      var csThumb = document.createElement('div');
+      csThumb.className = 'coming-soon-thumb';
+      csThumb.style.aspectRatio = csAspect;
+      csThumb.innerHTML = '<span class="cs-lock" aria-hidden="true">🔒</span><span class="cs-label">Coming Soon</span>';
+      card.appendChild(csThumb);
+
+      var lockedNameEl = document.createElement('div');
+      lockedNameEl.className = 'template-name locked-name';
+      lockedNameEl.textContent = t.name;
+      card.appendChild(lockedNameEl);
+
+      var lockedSubEl = document.createElement('div');
+      lockedSubEl.className = 'template-shots locked-shots';
+      lockedSubEl.textContent = 'Coming soon';
+      card.appendChild(lockedSubEl);
+
+      card.setAttribute('aria-disabled', 'true');
+      card.setAttribute('title', 'Coming soon');
+      // deliberately no click handler — the card is inert, not just styled to look disabled
+      templateGrid.appendChild(card);
+      return;
+    }
+
     var img = document.createElement('img');
     img.alt = t.name;
     img.src = t.frameMask;
     img.onerror = function(){ img.replaceWith(placeholderThumb(t)); };
     card.appendChild(img);
-    
+
     // 模板名字
     var nameEl = document.createElement('div');
     nameEl.className = 'template-name';
-    nameEl.textContent = (t.comingSoon ? '🔒 ' : '') + t.name;
+    nameEl.textContent = t.name;
     card.appendChild(nameEl);
 
     // --- 在这里添加小标题 ---
@@ -622,18 +699,12 @@ playShopMV();
     card.appendChild(subEl);
     // ----------------------
 
-    if(t.comingSoon){
-      card.style.opacity = '.5';
-      card.style.borderStyle = 'dashed';
-      card.style.cursor = 'default';
-    } else {
-      card.addEventListener('click', function(){
-        Array.prototype.forEach.call(templateGrid.children, function(c){c.classList.remove('selected');});
-        card.classList.add('selected');
-        selectedTemplate = t;
-        templateContinueBtn.disabled = false;
-      });
-    }
+    card.addEventListener('click', function(){
+      Array.prototype.forEach.call(templateGrid.children, function(c){c.classList.remove('selected');});
+      card.classList.add('selected');
+      selectedTemplate = t;
+      templateContinueBtn.disabled = false;
+    });
     templateGrid.appendChild(card);
   });
   function placeholderThumb(t){
@@ -734,7 +805,6 @@ playShopMV();
 
   /* ---------------- manual per-shot flow: click -> 5s countdown -> shutter -> advance ---------------- */
   var shootBtn = document.getElementById('shootBtn');
-  var nextToDecorateBtn = document.getElementById('nextToDecorateBtn');
   var countdownOverlay = document.getElementById('countdownOverlay');
   var countdownNum = document.getElementById('countdownNum');
   var flashEl = document.getElementById('flash');
@@ -749,9 +819,9 @@ playShopMV();
     captured = [];
     currentShotIndex = 0;
     isShooting = false;
+    baseCanvas = null; // force a fresh composite next time enterPrintStage()/enterDecorateStage() runs
     shootBtn.disabled = false;
     shootBtn.classList.remove('hide');
-    nextToDecorateBtn.classList.remove('show');
     shootBtn.textContent = '📷 Take Photo (1/'+shotsTotal()+')';
     shotCountEl.textContent = 'Captured 0 / '+shotsTotal();
     loadPoseForShot(0);
@@ -874,11 +944,19 @@ playShopMV();
       shotCountEl.textContent = 'Captured '+currentShotIndex+' / '+shotsTotal();
 
       if(currentShotIndex >= shotsTotal()){
-        // all done — never leave the fan stuck, hand off to the Next button
+        // all done — leave the camera page immediately and hand off to the printing scene.
+        // never leave the fan stuck: enterPrintStage() has its own try/catch fallback.
         shootBtn.classList.add('hide');
-        nextToDecorateBtn.classList.add('show');
         poseOverlay.classList.remove('show');
         poseHint.classList.remove('show');
+        isShooting = false;
+        try{
+          await enterPrintStage();
+        }catch(err){
+          console.error('enterPrintStage failed, skipping straight to decorate so the flow never stalls:', err);
+          try{ await enterDecorateStage(); }catch(e2){ showScene('decorate'); }
+        }
+        return;
       } else {
         shootBtn.textContent = '📷 Take Photo ('+(currentShotIndex+1)+'/'+shotsTotal()+')';
         loadPoseForShot(currentShotIndex);
@@ -886,22 +964,6 @@ playShopMV();
       }
       isShooting = false;
     })();
-  });
-
-  nextToDecorateBtn.addEventListener('click', async function(){
-    nextToDecorateBtn.disabled = true;
-    nextToDecorateBtn.textContent = 'Decorating…';
-    try{
-      await enterDecorateStage();
-    }catch(err){
-      console.error('enterDecorateStage failed:', err);
-      showScene('decorate'); // never leave the fan stuck on the booth screen
-      stageErrorMsg.textContent = 'Preview generation failed. Please make sure the asset image paths are correct, and try opening this page from a local server (http://localhost) instead of double-clicking the file directly.';
-      stageErrorMsg.classList.add('show');
-    }finally{
-      nextToDecorateBtn.disabled = false;
-      nextToDecorateBtn.textContent = 'Next: Decorate →';
-    }
   });
 
   /* ---------------- helpers ---------------- */
@@ -1129,6 +1191,69 @@ playShopMV();
 
   var stageErrorMsg = document.getElementById('stageErrorMsg');
 
+  /* ---------------- print / eject scene: ritual pause between shooting and decorating ---------------- */
+  var printerSlotMask = document.getElementById('printerSlotMask');
+  var printStrip = document.getElementById('printStrip');
+  var printHint = document.getElementById('printHint');
+  var printNextBtn = document.getElementById('printNextBtn');
+
+  async function enterPrintStage(){
+    stopCamera(); // the booth camera isn't needed again until a retake, so free it now
+    printNextBtn.disabled = true;
+    printHint.textContent = 'printing…';
+    printHint.style.display = '';
+
+    var layout = currentLayout();
+    printerSlotMask.style.aspectRatio = layout.canvasW + ' / ' + layout.canvasH;
+
+    // build the composite once here and reuse it in Decorate, instead of building it twice
+    baseCanvas = await buildBaseCanvas();
+    var canvasForSlot = baseCanvas;
+    printStrip.innerHTML = '';
+    printStrip.appendChild(canvasForSlot);
+
+    showScene('print');
+
+    // restart the eject animation cleanly every time this scene is entered
+    printStrip.classList.remove('eject');
+    void printStrip.offsetWidth; // force reflow so the animation restarts from frame 0
+    printStrip.classList.add('eject');
+
+    await new Promise(function(resolve){
+      var done = false;
+      function finish(){
+        if(done) return;
+        done = true;
+        printStrip.removeEventListener('animationend', finish);
+        resolve();
+      }
+      printStrip.addEventListener('animationend', finish);
+      // safety net: if the animationend event is ever missed (tab backgrounded, etc.),
+      // unlock the button anyway after the animation's known duration + a small buffer.
+      setTimeout(finish, 2800);
+    });
+
+    printHint.textContent = 'all done! ✧';
+    printNextBtn.disabled = false;
+  }
+
+  printNextBtn.addEventListener('click', async function(){
+    printNextBtn.disabled = true;
+    var originalLabel = printNextBtn.textContent;
+    printNextBtn.textContent = 'Decorating…';
+    try{
+      await enterDecorateStage();
+    }catch(err){
+      console.error('enterDecorateStage failed:', err);
+      showScene('decorate'); // never leave the fan stuck on the print screen
+      stageErrorMsg.textContent = 'Preview generation failed. Please make sure the asset image paths are correct, and try opening this page from a local server (http://localhost) instead of double-clicking the file directly.';
+      stageErrorMsg.classList.add('show');
+    }finally{
+      printNextBtn.disabled = false;
+      printNextBtn.textContent = originalLabel;
+    }
+  });
+
   function mountStageCanvas(canvas){
     var old = decorateStage.querySelector('canvas.stage-canvas');
     if(old) old.remove();
@@ -1142,7 +1267,9 @@ playShopMV();
     stageErrorMsg.textContent = '';
     var layout = currentLayout();
     decorateStage.style.aspectRatio = layout.canvasW + ' / ' + layout.canvasH;
-    baseCanvas = await buildBaseCanvas();
+    // reuse the canvas already built for the print scene when we have it (avoids building twice);
+    // buildBaseCanvas() again only as a fallback if entering Decorate some other way.
+    baseCanvas = baseCanvas || await buildBaseCanvas();
     // mount the real <canvas> in the DOM directly — this always renders on screen correctly
     // even when the canvas is "tainted" by local (file://) images, which only blocks *reading*
     // pixel data back out (toDataURL/getImageData), not drawing it to the page.
@@ -1155,6 +1282,7 @@ playShopMV();
     stickers = [];
     resetShootState();
     showScene('booth');
+    if(!stream) startCamera(); // enterPrintStage() stops the camera, so restart it for the retake
   });
 
   document.getElementById('finishDecorateBtn').addEventListener('click', async function(){
