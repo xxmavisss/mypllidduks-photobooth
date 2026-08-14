@@ -229,7 +229,7 @@
   .result-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
 
   /* ============ OUTSIDE SIGNPOST — a small prop tucked into the shop scene, not a floating UI widget ============ */
-  .signpost{position:absolute;z-index:12;left:3%;bottom:7.1%;width:clamp(96px,12vw,132px);
+  .signpost{position:absolute;z-index:12;left:3%;bottom:7.1%;width:13%;
     display:flex;flex-direction:column;align-items:center;pointer-events:none;}
   .signpost-board{position:relative;width:100%;padding:10px 8px;display:flex;flex-direction:column;
     align-items:stretch;gap:6px;background:var(--paper);border:2.4px solid var(--ink);
@@ -258,13 +258,12 @@
   .info-modal-content .faq-question{margin-bottom:2px;font-weight:700;}
 
   @media (max-width:900px){
-    .signpost{left:2%;bottom:7.1%;width:clamp(84px,10.5vw,112px);}
+    .signpost{left:2%;bottom:7.1%;}
   }
 
   @media (max-width:420px){
     .sign-title{font-size:1.9rem;}
     .countdown-num{font-size:5rem;}
-    .signpost{width:76px;}
     .signpost-btn{font-size:.62rem;padding:4px 3px;}
     .info-modal-dialog{padding:26px 20px 20px;}
   }
