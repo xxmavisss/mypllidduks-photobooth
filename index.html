@@ -230,14 +230,18 @@
 
   /* ============ OUTSIDE SIGNPOST — a small prop tucked into the shop scene, not a floating UI widget ============ */
   .signpost{position:absolute;z-index:12;left:3%;bottom:7.1%;width:13%;
-    display:flex;flex-direction:column;align-items:center;pointer-events:none;}
-  .signpost-board{position:relative;width:100%;padding:10px 8px;display:flex;flex-direction:column;
-    align-items:stretch;gap:6px;background:var(--paper);border:2.4px solid var(--ink);
+    display:flex;flex-direction:column;align-items:center;pointer-events:none;
+    container-type:inline-size;}
+  .signpost-board{position:relative;width:100%;padding:clamp(6px,8cqw,12px) clamp(4px,6cqw,9px);
+    display:flex;flex-direction:column;align-items:stretch;gap:clamp(3px,5cqw,7px);
+    background:var(--paper);border:2.4px solid var(--ink);
     border-radius:10px 8px 11px 9px/9px 11px 8px 10px;box-shadow:2px 3px 0 var(--ink);
     transform:rotate(-1.6deg);}
   .signpost-post{width:9px;height:38px;margin-top:-2px;background:var(--paper-deep);
     border:2.4px solid var(--ink);border-top:0;border-radius:0 0 4px 5px;transform:rotate(.8deg);}
-  .signpost-btn{position:relative;z-index:1;width:100%;padding:5px 4px;font-size:.68rem;line-height:1.2;
+  .signpost-btn{position:relative;z-index:1;width:100%;
+    padding:clamp(3px,5cqw,6px) clamp(2px,3cqw,5px);
+    font-size:clamp(7.5px,16cqw,13px);line-height:1.15;
     border:1.6px solid var(--ink);border-radius:7px 5px 8px 6px/6px 8px 5px 7px;background:var(--paper-deep);
     box-shadow:1px 1.5px 0 var(--ink);transition:transform .15s,box-shadow .15s;pointer-events:auto;
     white-space:normal;word-break:keep-all;overflow-wrap:normal;text-align:center;}
@@ -264,7 +268,6 @@
   @media (max-width:420px){
     .sign-title{font-size:1.9rem;}
     .countdown-num{font-size:5rem;}
-    .signpost-btn{font-size:.62rem;padding:4px 3px;}
     .info-modal-dialog{padding:26px 20px 20px;}
   }
 
