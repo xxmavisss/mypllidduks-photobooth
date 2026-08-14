@@ -472,7 +472,7 @@
     </div>
   </div>
 
-  <p class="decorate-hint">drag stickers to place them · drag the blue dot to resize · tap the red × to remove</p>
+  <p class="decorate-hint">drag stickers to place them · drag the blue dot to resize &amp; rotate · tap the red × to remove</p>
 
   <div class="sticker-palette" id="stickerPalette"></div>
 
@@ -1219,7 +1219,10 @@ playShopMV();
     el.addEventListener('pointerup', endDrag);
     el.addEventListener('pointercancel', endDrag);
 
-    // resize via handle
+    // resize + rotate via the single blue handle:
+    // distance from center -> size, angle around center -> rotation.
+    // the handle sits at the box's bottom-right corner (45° from center when
+    // rotation=0), so we subtract that base offset to keep rotation continuous.
     var handle = el.querySelector('.resize-handle');
     var resizing = false;
     handle.addEventListener('pointerdown', function(ev){
@@ -1232,9 +1235,11 @@ playShopMV();
       var rect = decorateStage.getBoundingClientRect();
       var cx = rect.left + s.x*rect.width;
       var cy = rect.top + s.y*rect.height;
-      var dist = Math.hypot(ev.clientX-cx, ev.clientY-cy);
+      var dx = ev.clientX-cx, dy = ev.clientY-cy;
+      var dist = Math.hypot(dx, dy);
       var frac = (dist*2) / rect.width;
       s.sizeFrac = Math.min(0.5, Math.max(0.05, frac));
+      s.rotation = (Math.atan2(dy, dx) * 180/Math.PI) - 45;
       layoutSticker(s);
     });
     function endResize(){ resizing=false; }
@@ -1252,6 +1257,7 @@ playShopMV();
     s.el.style.height = sizePx+'px';
     s.el.style.left = (s.x*100)+'%';
     s.el.style.top = (s.y*100)+'%';
+    s.el.style.transform = 'translate(-50%,-50%) rotate('+(s.rotation||0)+'deg)';
   }
   window.addEventListener('resize', function(){ stickers.forEach(layoutSticker); });
 
@@ -1409,8 +1415,13 @@ playShopMV();
       var img = stickerImgCache[s.src];
       if(img){
         // source PNGs are square (600x600) with transparent padding, so a straight square
-        // draw centered on (cx,cy) matches exactly what the on-screen <img> preview showed
-        ctx.drawImage(img, cx - r, cy - r, r*2, r*2);
+        // draw centered on (cx,cy) matches exactly what the on-screen <img> preview showed.
+        // rotate around that same center so the baked-in image matches the on-screen preview.
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate((s.rotation||0) * Math.PI/180);
+        ctx.drawImage(img, -r, -r, r*2, r*2);
+        ctx.restore();
       }
     });
   }
