@@ -717,15 +717,14 @@ playShopMV();
       name: 'Bamline\u2019s Gathering',
       subtitle: '4 shots',
       shots: 4,
-      layout: 'stack4',
-      frameMask: './assets/template-a/frame.png',
+      layout: 'bambyframe',
+      frameMask: './assets/bambyframe.png',
       poses: [
-        './assets/template-a/pose1.png',
-        './assets/template-a/pose2.png',
-        './assets/template-a/pose3.png',
-        './assets/template-a/pose4.png'
-      ],
-      comingSoon: true // reserved slot — assets not uploaded yet
+        './assets/bambypose1.png',
+        './assets/bambypose2.png',
+        './assets/bambypose3.png',
+        './assets/bambypose4.png'
+      ]
     },
     {
       id: 'template-b',
@@ -840,9 +839,10 @@ playShopMV();
     // at the wrong ratio and reintroduce the exact offset/zoom bug we fixed for the 4-cut stack.
     var cut = currentCutSize();
     boothFrameWrap.style.aspectRatio = cut.w + ' / ' + cut.h;
-    // the die-cut frame warning only applies to the 3rd Anniversary Frame's hand-measured heart
-    // cutouts — other (stack4) templates use plain rectangular cuts and don't need the warning.
-    frameNotice.classList.toggle('show', selectedTemplate.layout === 'grid2x3');
+    // the die-cut frame warning applies to templates with hand-measured, non-rectangular cutouts
+    // (3rd Anniversary Frame's hearts, Bamline's Gathering's heart window + icon/ribbon notches) —
+    // plain stack4 templates use even rectangular cuts and don't need the warning.
+    frameNotice.classList.toggle('show', selectedTemplate.layout === 'grid2x3' || selectedTemplate.layout === 'bambyframe');
     showScene('booth');
     startCamera();
   });
@@ -908,7 +908,21 @@ playShopMV();
   var poseHint = document.getElementById('poseHint');
   var poseReady = false;
 
+  function syncBoothAspectForShot(index){
+    // Bamline's four windows have different shapes. Keep the live viewfinder in
+    // the same shape as the window that will receive this shot, so its visible
+    // crop matches the exported strip (WYSIWYG).
+    if(!selectedTemplate || selectedTemplate.layout !== 'bambyframe'){
+      boothFrameWrap.style.aspectRatio = '638 / 436';
+      return;
+    }
+    var rects = currentRects();
+    var r = rects[index] || rects[0];
+    boothFrameWrap.style.aspectRatio = r.w + ' / ' + r.h;
+  }
+
   function loadPoseForShot(index){
+    syncBoothAspectForShot(index);
     poseReady = false;
     poseOverlay.classList.remove('show');
     poseHint.classList.remove('show');
@@ -994,6 +1008,23 @@ playShopMV();
           return { x: 400 - cutW/2, y: cy - cutH/2, w: cutW, h: cutH };
         });
       }
+    },
+    // "Bamline's Gathering" — 4 shots, 800x2400 canvas. Rects below are hard-coded, measured
+    // pixel coordinates of the 4 die-cut window openings in bambyframe.png (found by isolating
+    // the mask's alpha==0 regions), NOT an even grid division — like plave-heart-6.png, this
+    // frame's windows are hand-placed, irregular, and different sizes from each other (window 3
+    // is heart-shaped and window 1/2 have notches where the folder/shirt icons and ribbon cut
+    // into the opening), so a uniform stack4 grid doesn't line up with the actual cutouts.
+    bambyframe: {
+      canvasW: 800, canvasH: 2400,
+      rects: function(){
+        return [
+          { x: 144, y: 87,   w: 578, h: 433 }, // Pose 1 — suited pose, top window
+          { x: 58,  y: 621,  w: 682, h: 427 }, // Pose 2 — heart-hands pose, ribbon window
+          { x: 85,  y: 1146, w: 605, h: 396 }, // Pose 3 — peace-sign pose, heart-shaped window
+          { x: 90,  y: 1642, w: 619, h: 371 }  // Pose 4 — waving pose, bottom window
+        ];
+      }
     }
   };
 
@@ -1003,7 +1034,11 @@ playShopMV();
   }
   function currentRects(){ return currentLayout().rects(); }
   function currentCutSize(){
-    var r = currentRects()[0];
+    // Each Bamline opening has its own aspect ratio.  Capture into the opening for
+    // the shot currently being taken; using rect[0] for every shot stretched shots
+    // 2–4 when they were later placed into their differently shaped openings.
+    var rects = currentRects();
+    var r = rects[currentShotIndex] || rects[0];
     return { w: r.w, h: r.h };
   }
 
