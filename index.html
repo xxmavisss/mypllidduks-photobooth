@@ -119,7 +119,7 @@
     cursor:pointer;box-shadow:2px 3px 0 rgba(0,0,0,.12);transition:transform .15s;}
   .template-card:active{transform:translateY(2px);}
   .template-card.selected{outline:3px solid var(--blue);outline-offset:2px;background:var(--paper-deep);}
-  .template-card svg,.template-card img{width:100%;height:auto;display:block;border-radius:6px;background:#fff;}
+  .template-card svg,.template-card img{width:100%;aspect-ratio:2/3;object-fit:contain;display:block;border-radius:6px;background:#fff;}
   .template-name{text-align:center;font-family:'Gaegu',cursive;font-size:.95rem;margin-top:4px;}
   .template-shots{text-align:center;font-family:'Patrick Hand',cursive;font-size:.75rem;color:var(--ink-soft);}
 
@@ -717,7 +717,7 @@ playShopMV();
       name: 'Bamline\u2019s Gathering',
       subtitle: '4 shots',
       shots: 4,
-      layout: 'bambyframe',
+      layout: 'stack4',
       frameMask: './assets/bamline/bambyframe.png',
       poses: [
         './assets/bamline/bambypose1.png',
@@ -755,6 +755,21 @@ playShopMV();
         './assets/template-c/pose4.png'
       ],
       comingSoon: true // reserved slot — assets not uploaded yet
+    },
+    {
+      id: 'template-d',
+      name: 'Noah\u2019s Gym Club',
+      subtitle: '4 shots',
+      shots: 4,
+      layout: 'stack4',
+      frameMask: './assets/template-d/frame.png',
+      poses: [
+        './assets/template-d/pose1.png',
+        './assets/template-d/pose2.png',
+        './assets/template-d/pose3.png',
+        './assets/template-d/pose4.png'
+      ],
+      comingSoon: true // reserved slot — assets not uploaded yet
     }
   ];
   var ACCENTS = ['#87CEEB','#C8A2C8','#FFB6C1','#E63946','#2B2D42'];
@@ -768,13 +783,13 @@ playShopMV();
     card.dataset.id = t.id;
 
     if(t.comingSoon){
-      // never touch t.frameMask/t.poses here — nothing is loaded, so no path can ever leak into the UI
-      // (derived directly from the layout name rather than the LAYOUTS map, which isn't defined
-      // yet at this point in the script — this runs synchronously as templates are built)
-      var csAspect = (t.layout === 'grid2x3') ? '1200/1800' : '800/2400';
+      // never touch t.frameMask/t.poses here — nothing is loaded, so no path can ever leak into the UI.
+      // Every card in the picker (loaded or locked) uses the SAME fixed 2:3 thumbnail box, regardless
+      // of the template's actual canvas aspect (grid2x3 vs the much taller stack4) — this is a picker
+      // display convention only, it has no effect on the real canvas used later in booth/decorate/result.
       var csThumb = document.createElement('div');
       csThumb.className = 'coming-soon-thumb';
-      csThumb.style.aspectRatio = csAspect;
+      csThumb.style.aspectRatio = '2/3';
       csThumb.innerHTML = '<span class="cs-lock" aria-hidden="true">🔒</span><span class="cs-label">Coming Soon</span>';
       card.appendChild(csThumb);
 
@@ -823,9 +838,8 @@ playShopMV();
     templateGrid.appendChild(card);
   });
   function placeholderThumb(t){
-    var layout = LAYOUTS[t.layout] || LAYOUTS.stack4;
     var d = document.createElement('div');
-    d.style.cssText = 'width:100%;aspect-ratio:'+layout.canvasW+'/'+layout.canvasH+';display:flex;align-items:center;justify-content:center;'+
+    d.style.cssText = 'width:100%;aspect-ratio:2/3;display:flex;align-items:center;justify-content:center;'+
       'background:#f2ecdc;border-radius:6px;font-family:Gaegu,cursive;font-size:.65rem;text-align:center;color:#5a5a52;padding:6px;';
     d.textContent = ' '+t.frameMask+' here';
     return d;
