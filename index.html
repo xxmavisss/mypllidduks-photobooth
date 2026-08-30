@@ -149,10 +149,17 @@
     font-family:'Gaegu',cursive;text-align:center;padding:10px;font-size:.9rem;}
   .cam-msg .cam-retry-btn{font-size:.85rem;padding:8px 18px;}
 
-  /* per-shot pose guide overlay — a single-idol PNG for ONE cut, filling the whole viewfinder */
-  .pose-overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  /* per-shot pose guide overlay — each pose may use its own size and placement.
+     The image keeps its intrinsic ratio, so guide art is never stretched or cover-cropped. */
+  .pose-overlay{position:absolute;left:var(--pose-x,50%);top:var(--pose-y,50%);
+    width:var(--pose-width,100%);height:auto;max-width:100%;max-height:100%;object-fit:contain;
+    transform:translate(calc(0% - var(--pose-anchor-x,50%)),calc(0% - var(--pose-anchor-y,50%)));
     pointer-events:none;z-index:2;display:none;opacity:.92;}
   .pose-overlay.show{display:block;}
+  /* Noah guides are already cropped to one camera viewport. They are shown once,
+     at the viewport size, with no extra crop, transform, offset, or scale. */
+  .pose-overlay.noah-guide{inset:0;left:0;top:0;width:100%;height:100%;max-width:none;max-height:none;
+    object-fit:contain;transform:none;}
   .pose-hint{position:absolute;left:6px;bottom:6px;z-index:4;font-family:'Gaegu',cursive;font-size:.62rem;
     color:#eee;background:rgba(0,0,0,.45);padding:2px 6px;border-radius:6px;pointer-events:none;display:none;}
   .pose-hint.show{display:block;}
@@ -761,15 +768,15 @@ playShopMV();
       name: 'Noah\u2019s Gym Club',
       subtitle: '4 shots',
       shots: 4,
-      layout: 'stack4',
-      frameMask: './assets/template-d/frame.png',
+      layout: 'noahgymclub',
+      frameMask: './assets/noahgymclub/noahframe.png',
+      guideMode: 'pre-cropped',
       poses: [
-        './assets/template-d/pose1.png',
-        './assets/template-d/pose2.png',
-        './assets/template-d/pose3.png',
-        './assets/template-d/pose4.png'
-      ],
-      comingSoon: true // reserved slot — assets not uploaded yet
+        './assets/noahgymclub/noahguide1.png',
+        './assets/noahgymclub/noahguide2.png',
+        './assets/noahgymclub/noahguide3.png',
+        './assets/noahgymclub/noahguide4.png'
+      ]
     }
   ];
   var ACCENTS = ['#87CEEB','#C8A2C8','#FFB6C1','#E63946','#2B2D42'];
@@ -923,25 +930,40 @@ playShopMV();
   var poseReady = false;
 
   function syncBoothAspectForShot(index){
-    // Bamline's four windows have different shapes. Keep the live viewfinder in
-    // the same shape as the window that will receive this shot, so its visible
-    // crop matches the exported strip (WYSIWYG).
-    if(!selectedTemplate || selectedTemplate.layout !== 'bambyframe'){
-      boothFrameWrap.style.aspectRatio = '638 / 436';
-      return;
-    }
+    // Every live viewfinder uses the exact destination rectangle that will receive
+    // this shot on the export canvas. CSS object-fit:cover and drawImageCover()
+    // therefore apply the same centered-cover crop to the same aspect ratio.
     var rects = currentRects();
     var r = rects[index] || rects[0];
     boothFrameWrap.style.aspectRatio = r.w + ' / ' + r.h;
   }
 
+  function poseSource(pose){ return typeof pose === 'string' ? pose : pose && pose.src; }
+
   function loadPoseForShot(index){
     syncBoothAspectForShot(index);
     poseReady = false;
     poseOverlay.classList.remove('show');
+    poseOverlay.classList.remove('noah-guide');
+    poseOverlay.onload = null;
+    poseOverlay.onerror = null;
     poseHint.classList.remove('show');
-    var src = selectedTemplate && selectedTemplate.poses && selectedTemplate.poses[index];
+    var pose = selectedTemplate && selectedTemplate.poses && selectedTemplate.poses[index];
+    var src = poseSource(pose);
     if(!src) return;
+    if(selectedTemplate.guideMode === 'pre-cropped'){
+      poseOverlay.classList.add('noah-guide');
+      poseOverlay.onload = function(){ poseReady = true; poseOverlay.classList.add('show'); };
+      poseOverlay.onerror = function(){ poseReady = false; poseOverlay.classList.remove('show'); poseHint.classList.add('show'); };
+      poseOverlay.src = src;
+      return;
+    }
+    var poseWidth = pose && typeof pose.scale === 'number' ? (pose.scale * 100) + '%' : (pose && pose.width) || '100%';
+    poseOverlay.style.setProperty('--pose-width', poseWidth);
+    poseOverlay.style.setProperty('--pose-x', (pose && pose.x) || '50%');
+    poseOverlay.style.setProperty('--pose-y', (pose && pose.y) || '50%');
+    poseOverlay.style.setProperty('--pose-anchor-x', (pose && pose.anchorX) || '50%');
+    poseOverlay.style.setProperty('--pose-anchor-y', (pose && pose.anchorY) || '50%');
     poseOverlay.onload = function(){ poseReady = true; poseOverlay.classList.add('show'); poseHint.classList.remove('show'); };
     poseOverlay.onerror = function(){ poseReady = false; poseOverlay.classList.remove('show'); poseHint.classList.add('show'); };
     poseOverlay.src = src;
@@ -1039,6 +1061,21 @@ playShopMV();
           { x: 90,  y: 1642, w: 619, h: 371 }  // Pose 4 — waving pose, bottom window
         ];
       }
+    },
+    // Noah's Gym Club — explicit per-window bounds in the 800×2400 export
+    // coordinate system. Even though these currently share a size, keeping them
+    // as four source-of-truth rectangles prevents a future frame revision from
+    // silently inheriting the generic stack4 geometry.
+    noahgymclub: {
+      canvasW: 800, canvasH: 2400,
+      rects: function(){
+        return [
+          { x: 50.6635, y: 170.0001, w: 698.673, h: 436.671, photoOffsetX: 0, photoOffsetY: -15 },
+          { x: 50.6635, y: 648.3110, w: 698.673, h: 436.671, photoOffsetX: 0, photoOffsetY: 0 },
+          { x: 50.6635, y: 1126.6215, w: 698.673, h: 436.671, photoOffsetX: 0, photoOffsetY: 0 },
+          { x: 50.6635, y: 1604.9325, w: 698.673, h: 436.671, photoOffsetX: 0, photoOffsetY: 15 }
+        ];
+      }
     }
   };
 
@@ -1056,25 +1093,27 @@ playShopMV();
     return { w: r.w, h: r.h };
   }
 
-  /* single-step "cover" crop: scale the source so it fully covers the w×h target, then take the
-     centered w×h window. This is the ONLY crop that ever happens to a shot — capturing straight
-     from <video> into the exact cut size means there is no second cover-crop later to drift
-     the framing, which was the root cause of the offset/zoom bug. Mirroring is baked into this
-     same draw call so it always matches the live preview's transform:scaleX(-1) exactly. */
-  function drawImageCover(ctx, img, x, y, w, h, mirror){
+  /* The shared centered-cover calculation used by the canvas capture. The live <video> uses
+     object-fit:cover against the same rect aspect ratio, which is the browser equivalent of
+     this calculation. Export receives this already-cropped canvas at the same native size. */
+  function getCoverCrop(img, w, h){
     var sw0 = img.videoWidth || img.naturalWidth || img.width;
     var sh0 = img.videoHeight || img.naturalHeight || img.height;
     if(!sw0 || !sh0) throw new Error('capture source not ready');
     var scale = Math.max(w/sw0, h/sh0);
     var sw = w/scale, sh = h/scale;
-    var sx = (sw0-sw)/2, sy = (sh0-sh)/2;
+    return { sx:(sw0-sw)/2, sy:(sh0-sh)/2, sw:sw, sh:sh };
+  }
+
+  function drawImageCover(ctx, img, x, y, w, h, mirror){
+    var crop = getCoverCrop(img, w, h);
     ctx.save();
     ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
     if(mirror){
       ctx.translate(x+w, y); ctx.scale(-1,1);
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+      ctx.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, h);
     } else {
-      ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+      ctx.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh, x, y, w, h);
     }
     ctx.restore();
   }
@@ -1086,10 +1125,16 @@ playShopMV();
     // shows up baked into the final photo, it means something upstream of this function drew
     // more than camVideo; this function itself never does.
     var cut = currentCutSize();
+    // Noah's live viewport is exactly 1.6:1. Store that shot at an exact 1.6:1
+    // bitmap size so canvas integer conversion cannot subtly change its source crop.
+    // Other templates retain their existing per-slot rounded capture dimensions.
+    var isNoah = selectedTemplate && selectedTemplate.id === 'template-d';
+    var captureW = isNoah ? 800 : Math.round(cut.w);
+    var captureH = isNoah ? 500 : Math.round(cut.h);
     var c = document.createElement('canvas');
-    c.width = cut.w; c.height = cut.h;
+    c.width = captureW; c.height = captureH;
     var ctx = c.getContext('2d');
-    drawImageCover(ctx, camVideo, 0, 0, cut.w, cut.h, facingMode === 'user');
+    drawImageCover(ctx, camVideo, 0, 0, captureW, captureH, facingMode === 'user');
     return c;
   }
 
@@ -1104,7 +1149,8 @@ playShopMV();
       await doCountdown();
       flashEl.classList.remove('go'); void flashEl.offsetWidth; flashEl.classList.add('go');
       shutterSound();
-      captured.push(captureFrame());
+      var capturedShot = captureFrame();
+      captured.push(capturedShot);
       currentShotIndex++;
       shotCountEl.textContent = 'Captured '+currentShotIndex+' / '+shotsTotal();
 
@@ -1174,7 +1220,11 @@ playShopMV();
       ctx.rect(r.x, r.y, r.w, r.h);
       ctx.clip(); // 强制限制在格子内，多余部分自动切掉
       if(photo){
-        ctx.drawImage(photo, r.x, r.y, r.w, r.h);
+        // Noah-only tuning controls move the photo pixels inside the existing
+        // clipped slot. The slot itself, frame, guide, and photo scale stay fixed.
+        var photoOffsetX = t.layout === 'noahgymclub' ? (r.photoOffsetX || 0) : 0;
+        var photoOffsetY = t.layout === 'noahgymclub' ? (r.photoOffsetY || 0) : 0;
+        ctx.drawImage(photo, r.x + photoOffsetX, r.y + photoOffsetY, r.w, r.h);
       } else {
         ctx.fillStyle = '#ddd';
         ctx.fillRect(r.x, r.y, r.w, r.h);
@@ -1203,7 +1253,7 @@ playShopMV();
   /* preload the current template's mask + pose PNGs as soon as it's picked, so decorate/result never stall */
   function preloadTemplateAssets(t){
     loadImageCached(t.frameMask);
-    (t.poses||[]).forEach(loadImageCached);
+    (t.poses||[]).forEach(function(pose){ loadImageCached(poseSource(pose)); });
   }
 
   /* ---------------- DIY decorate stage ---------------- */
