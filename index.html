@@ -724,7 +724,7 @@ playShopMV();
       name: 'Bamline\u2019s Gathering',
       subtitle: '4 shots',
       shots: 4,
-      layout: 'stack4',
+      layout: 'bambyframe',
       frameMask: './assets/bamline/bambyframe.png',
       poses: [
         './assets/bamline/bambypose1.png',
@@ -784,7 +784,12 @@ playShopMV();
 
   var templateGrid = document.getElementById('templateGrid');
   var templateContinueBtn = document.getElementById('templateContinueBtn');
-  TEMPLATES.forEach(function(t){
+  // Picker-only order. TEMPLATES itself stays in its original order so every
+  // template ID and all existing runtime fallbacks keep their current behavior.
+  var templateDisplayOrder = ['template-d', 'plave-3rd-anniv', 'template-a', 'template-b', 'template-c'];
+  templateDisplayOrder.forEach(function(id){
+    var t = TEMPLATES.find(function(template){ return template.id === id; });
+    if(!t) return;
     var card = document.createElement('div');
     card.className = 'template-card'+(t.comingSoon ? ' locked' : '');
     card.dataset.id = t.id;
@@ -1055,10 +1060,12 @@ playShopMV();
       canvasW: 800, canvasH: 2400,
       rects: function(){
         return [
-          { x: 144, y: 87,   w: 578, h: 433 }, // Pose 1 — suited pose, top window
-          { x: 58,  y: 621,  w: 682, h: 427 }, // Pose 2 — heart-hands pose, ribbon window
-          { x: 85,  y: 1146, w: 605, h: 396 }, // Pose 3 — peace-sign pose, heart-shaped window
-          { x: 90,  y: 1642, w: 619, h: 371 }  // Pose 4 — waving pose, bottom window
+          // Photopea measurements from the 2400×7200 source frame, mapped 1:3
+          // into this template's 800×2400 export coordinate system.
+          { x: 71.333333, y: 84.333333,   w: 656.333333, h: 437.333333, captureW: 1969, captureH: 1312 },
+          { x: 49.666667, y: 614,         w: 701.333333, h: 438.333333, captureW: 2104, captureH: 1315 },
+          { x: 67.666667, y: 1129.666667, w: 639.666667, h: 419.666667, captureW: 1919, captureH: 1259 },
+          { x: 80.666667, y: 1640,        w: 634.333333, h: 379.666667, captureW: 1903, captureH: 1139 }
         ];
       }
     },
@@ -1129,8 +1136,13 @@ playShopMV();
     // bitmap size so canvas integer conversion cannot subtly change its source crop.
     // Other templates retain their existing per-slot rounded capture dimensions.
     var isNoah = selectedTemplate && selectedTemplate.id === 'template-d';
-    var captureW = isNoah ? 800 : Math.round(cut.w);
-    var captureH = isNoah ? 500 : Math.round(cut.h);
+    var isBamby = selectedTemplate && selectedTemplate.layout === 'bambyframe';
+    var bambyRect = isBamby ? (currentRects()[currentShotIndex] || currentRects()[0]) : null;
+    // Bamby's export slots use one-third source coordinates and therefore have
+    // fractional pixels. Capture at the measured source dimensions instead of
+    // rounding those fractions, preserving each exact per-shot viewport ratio.
+    var captureW = isNoah ? 800 : (bambyRect ? bambyRect.captureW : Math.round(cut.w));
+    var captureH = isNoah ? 500 : (bambyRect ? bambyRect.captureH : Math.round(cut.h));
     var c = document.createElement('canvas');
     c.width = captureW; c.height = captureH;
     var ctx = c.getContext('2d');
