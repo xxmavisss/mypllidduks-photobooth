@@ -134,7 +134,8 @@
     letter-spacing:.01em;transform:rotate(3deg);text-wrap:balance;}
   .shop-window-video .tv-fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     flex-direction:column;color:#eee;font-family:'Gaegu',cursive;font-size:.7rem;text-align:center;padding:4%;
-    background:repeating-linear-gradient(0deg,#1a1a1a,#1a1a1a 2px,#222 2px,#222 4px);}
+    border:0;cursor:pointer;background:repeating-linear-gradient(0deg,#1a1a1a,#1a1a1a 2px,#222 2px,#222 4px);}
+  .shop-window-video .tv-fallback small{display:block;margin-top:2px;font:inherit;font-size:.82em;opacity:.72;}
   .shop-window-video.fallback .tv-fallback{display:flex;}
   .shop-window-video.fallback video{display:none;}
 
@@ -534,8 +535,8 @@
     </div>
     <!-- TV screen positioned exactly over the shop window rect (viewBox 0 0 800 620 -> % of wrap) -->
    <div class="shop-window-video" id="shopWindowVideo" style="left:22%; top:48%; width:28.75%; height:26%;">
-  <video id="shopTV" src="./assets/media/window.mp4" autoplay muted loop playsinline poster=""></video>
-  <div class="tv-fallback">📼 place your own local file at<br><b>./assets/media/window.mp4</b><br>to play the MV here</div>
+  <video id="shopTV" src="./assets/media/window.mp4" autoplay muted loop playsinline preload="auto" poster=""></video>
+  <button class="tv-fallback" id="shopTVFallback" type="button" aria-label="Play storefront video">MV resting ✦<small>tap to play</small></button>
 </div>
   </div>
 
@@ -802,14 +803,17 @@
   /* ---------------- shop window video: single window.mp4, auto-looping ---------------- */
 var shopTV = document.getElementById('shopTV');
 var shopWindowVideo = document.getElementById('shopWindowVideo');
+var shopTVFallback = document.getElementById('shopTVFallback');
 
 // video already has src="./assets/media/window.mp4" and loop set in the HTML, so it will
 // loop on its own — this just kicks off playback and handles the fallback UI.
 function playShopMV() {
   var playPromise = shopTV.play();
   if (playPromise !== undefined) {
-    playPromise.catch(function() {
-      // autoplay blocked or file missing — show the fallback message
+    playPromise.then(function() {
+      shopWindowVideo.classList.remove('fallback');
+    }).catch(function() {
+      // Browsers may block playback even when the bundled video loaded correctly.
       shopWindowVideo.classList.add('fallback');
     });
   }
@@ -819,6 +823,10 @@ shopTV.addEventListener('error', function() {
   console.warn('MV 加载失败: ./assets/media/window.mp4');
   shopWindowVideo.classList.add('fallback');
 });
+shopTV.addEventListener('playing', function() {
+  shopWindowVideo.classList.remove('fallback');
+});
+shopTVFallback.addEventListener('click', playShopMV);
 
 playShopMV();
 
