@@ -104,7 +104,34 @@
 
   .shop-window-video{position:absolute;overflow:hidden;background:#0b0b0b;border-radius:3px;}
   .shop-window-video video{width:100%;height:100%;object-fit:cover;display:block;}
-  .welcome-banner-img{position:absolute;height:auto;display:block;pointer-events:none;}
+  /* CSS-rendered replacement for the original 600x360 welcome-banner.png.
+     Its 5:3 box and storefront anchors intentionally match the former image. */
+  .welcome-sign{position:absolute;left:71%;bottom:6.8%;width:22%;aspect-ratio:5/3;
+    display:block;pointer-events:none;container-type:inline-size;color:var(--ink);}
+  .welcome-sign__rear{position:absolute;z-index:0;left:64%;top:7%;width:17%;height:82%;
+    border:1.7cqw solid var(--ink);border-radius:3cqw 2cqw 1.5cqw 2.5cqw;
+    background:var(--paper);transform:skewX(4deg) rotate(-1deg);}
+  .welcome-sign__hatch{position:absolute;z-index:1;left:63.5%;top:23%;width:12%;height:38%;
+    clip-path:polygon(50% 0,100% 100%,0 100%);border-bottom:1.6cqw solid var(--ink);
+    background:repeating-linear-gradient(72deg,transparent 0 2cqw,var(--ink) 2.1cqw 2.7cqw,transparent 2.8cqw 4.4cqw);opacity:.9;}
+  .welcome-sign__brace{position:absolute;z-index:2;left:62%;top:58%;width:18%;height:11%;
+    border:1.7cqw solid var(--ink);border-radius:1.5cqw;background:var(--paper);transform:rotate(1.5deg);}
+  .welcome-sign__rear-foot{position:absolute;z-index:1;left:70%;top:68%;width:11%;height:24%;
+    border:1.7cqw solid var(--ink);border-top:0;border-radius:0 0 2cqw 2.8cqw;
+    background:var(--paper);transform:skewX(3deg) rotate(-1deg);}
+  .welcome-sign__front{position:absolute;z-index:4;left:22%;top:4%;width:53%;height:72%;
+    border:1.8cqw solid var(--ink);border-radius:5cqw 3cqw 2cqw 2.5cqw;
+    background:var(--paper);transform:skewX(-7deg) rotate(.8deg);box-shadow:.8cqw 1cqw 0 rgba(43,45,66,.05);}
+  .welcome-sign__leg{position:absolute;z-index:3;top:70%;border:1.8cqw solid var(--ink);border-top:0;
+    border-radius:0 0 2.2cqw 2.8cqw;background:var(--paper);}
+  .welcome-sign__leg--left{left:20%;width:12%;height:23%;transform:skewX(-5deg) rotate(1deg);}
+  .welcome-sign__leg--right{left:61%;width:14%;height:27%;transform:skewX(-7deg) rotate(2deg);}
+  .welcome-sign__screw{position:absolute;z-index:5;top:12%;width:4.5cqw;aspect-ratio:1;border:1.5cqw solid var(--ink);
+    border-radius:50%;background:var(--paper);}
+  .welcome-sign__screw--left{left:30%;}.welcome-sign__screw--right{left:64%;}
+  .welcome-sign__text{position:absolute;z-index:5;left:27%;top:27%;width:42%;margin:0;text-align:center;
+    color:var(--ink);font-family:'Patrick Hand',cursive;font-size:11cqw;line-height:1.02;
+    letter-spacing:.01em;transform:rotate(3deg);text-wrap:balance;}
   .shop-window-video .tv-fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     flex-direction:column;color:#eee;font-family:'Gaegu',cursive;font-size:.7rem;text-align:center;padding:4%;
     background:repeating-linear-gradient(0deg,#1a1a1a,#1a1a1a 2px,#222 2px,#222 4px);}
@@ -118,15 +145,34 @@
 
   /* ============ SCENE 1 : LOBBY / COIN MACHINE ============ */
   #scene-lobby{gap:10px;justify-content:center;}
-  .coin-machine-wrap{width:100%;max-width:280px;}
-  .coin-slot-btn{position:relative;cursor:pointer;transition:transform .16s ease;}
-  .coin-slot-btn.inserting{pointer-events:none;}
+  .coin-interaction-stage{position:relative;width:min(100%,380px);display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .coin-machine-wrap{position:relative;width:100%;max-width:280px;}
+  .coin-machine-wrap::after{content:"";position:absolute;inset:0;border-radius:20px;background:rgba(255,255,255,.09);
+    opacity:0;pointer-events:none;}
+  .coin-slot-btn{position:relative;width:180px;height:100px;transition:transform .16s ease;}
+  .coin-token-btn{position:absolute;z-index:6;left:calc(100% - 20px);top:260px;width:48px;height:48px;padding:0;
+    border:0;border-radius:50%;background:transparent;cursor:pointer;transition:transform .16s ease,filter .16s ease;}
+  .coin-art{position:absolute;left:50%;top:50%;width:53px;height:53px;display:block;object-fit:contain;
+    transform:translate(-50%,-50%);pointer-events:none;user-select:none;-webkit-user-drag:none;}
+  .coin-token-art{filter:drop-shadow(1px 3px 1px rgba(43,45,66,.2));}
+  .coin-token-btn.inserting{pointer-events:none;}
+  .coin-token-btn.inserting .coin-token-art{visibility:hidden;}
+  .coin-token-btn:focus-visible{outline:2px solid var(--blue);outline-offset:3px;}
+  .coin-token-btn.pickup{animation:coinClick .12s ease-out;}
+  @keyframes coinClick{45%{transform:translateY(1px) scale(.975)}100%{transform:translateY(-1px) scale(1)}}
+  .coin-slot-btn>svg{position:relative;z-index:1;}
   .coin-slot-btn .slot-glow{animation:pulseGlow 1.4s ease-in-out infinite;}
   @keyframes pulseGlow{0%,100%{opacity:.35;}50%{opacity:.9;}}
   .coin-slot-btn.accepting{animation:slotAccept .22s ease-out;}
   .coin-slot-btn.accepting .slot-glow{animation:slotAccepted .22s ease-out;}
+  .coin-slot-btn.accepting .coin-slot-lip::after{animation:slotSheen .13s ease-out;}
   @keyframes slotAccept{35%{transform:translateY(2px) scale(.985)}70%{transform:translateY(-1px)}}
-  @keyframes slotAccepted{40%{opacity:.8;filter:drop-shadow(0 0 3px rgba(135,206,235,.55))}100%{opacity:.45;filter:none}}
+  @keyframes slotAccepted{40%{opacity:.82;transform:scaleX(1.045)}100%{opacity:.45;transform:scaleX(1)}}
+  @keyframes slotSheen{0%{opacity:0;transform:translateX(-120%)}45%{opacity:.7}100%{opacity:0;transform:translateX(120%)}}
+  .coin-slot-lip{position:absolute;z-index:4;left:42.22%;top:42%;width:15.56%;height:16%;overflow:hidden;
+    border-radius:7px;background:var(--ink);pointer-events:none;}
+  .coin-slot-lip::after{content:"";position:absolute;inset:-20% -30%;opacity:0;
+    background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.6) 48%,transparent 66%);}
   .coin-credit-feedback{position:absolute;left:50%;top:14px;z-index:2;transform:translate(-50%,3px);
     padding:2px 8px;border:1.5px solid rgba(43,45,66,.55);border-radius:10px;background:rgba(242,236,220,.94);
     color:var(--green);font-family:'Gaegu',cursive;font-size:.72rem;font-weight:700;letter-spacing:.04em;
@@ -135,17 +181,31 @@
   @keyframes creditReady{0%{opacity:0;transform:translate(-50%,4px) scale(.94)}30%,75%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-2px) scale(.98)}}
   .coin-hint{text-align:center;font-family:'Gaegu',cursive;font-size:1rem;margin-top:2px;}
 
-  #coin-flying{position:fixed;left:var(--coin-slot-x,50%);top:var(--coin-slot-y,50%);width:34px;height:34px;border-radius:50%;
-    background:radial-gradient(circle at 35% 30%,#fff6d8,#d9b44a 60%,#8a6d20);
-    border:2px solid var(--ink);opacity:0;transform:translate(-50%,-74px) scale(.96);z-index:80;pointer-events:none;
-    box-shadow:1px 2px 0 rgba(43,45,66,.25);}
-  #coin-flying.insert{animation:coinInsert .36s cubic-bezier(.32,.7,.35,1) forwards;}
-  @keyframes coinInsert{
-    0%{opacity:0;transform:translate(-50%,-74px) scale(.94);}
-    15%{opacity:1;}
-    72%{opacity:1;transform:translate(-50%,-9px) scale(1);}
-    100%{opacity:0;transform:translate(-50%,-1px) scale(.22);}
+  .coin-flight-clip{position:absolute;z-index:5;left:0;top:0;width:100%;height:var(--coin-clip-height,100%);
+    overflow:hidden;pointer-events:none;}
+  #coin-flying{position:absolute;left:var(--coin-start-x,50%);top:var(--coin-start-y,50%);width:38px;height:38px;
+    background:url('./assets/media/coin.png') center/53px 53px no-repeat;
+    visibility:hidden;transform:translate(-50%,-50%);pointer-events:none;
+    will-change:transform;}
+  #coin-flying::after{content:"";position:absolute;z-index:-1;inset:2px;border-radius:50%;background:rgba(43,45,66,.24);
+    transform:translate(1px,4px);opacity:1;}
+  #coin-flying.approach{visibility:visible;animation:coinApproach .33s cubic-bezier(.3,.72,.36,1) forwards;}
+  #coin-flying.approach::after{animation:coinShadowApproach .33s ease-out forwards;}
+  #coin-flying.enter{visibility:visible;animation:coinEnter .09s cubic-bezier(.55,.05,.8,.35) forwards;}
+  @keyframes coinApproach{
+    0%{transform:translate(-50%,-50%) translate3d(0,0,0) scale(1);}
+    15%{transform:translate(-50%,-50%) translate3d(var(--coin-x1),var(--coin-y1),0) scale(1.03);}
+    68%{transform:translate(-50%,-50%) translate3d(var(--coin-x2),var(--coin-y2),0) scale(.9);}
+    100%{transform:translate(-50%,-50%) translate3d(var(--coin-dx),var(--coin-dy),0) scale(.82);}
   }
+  @keyframes coinShadowApproach{0%{opacity:1;transform:translate(1px,4px)}70%{opacity:.55;transform:translate(1px,2px)}100%{opacity:0;transform:translate(0,1px)}}
+  @keyframes coinEnter{
+    from{transform:translate(-50%,-50%) translate3d(var(--coin-dx),var(--coin-dy),0) scale(.82);}
+    to{transform:translate(-50%,-50%) translate3d(var(--coin-dx),calc(var(--coin-dy) + 20px),0) scale(.76);}
+  }
+  .coin-machine-wrap.wake::after{animation:machineWake .26s ease-out;}
+  @keyframes machineWake{45%{opacity:1}100%{opacity:0}}
+  body.coin-transitioning #pointerFx{display:none;}
 
   /* ============ SCENE 2 : TEMPLATE PICKER ============ */
   #scene-template{gap:10px;}
@@ -156,6 +216,7 @@
     --template-accent:var(--blue);}
   @keyframes cardEnter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
   .template-card:active{transform:translateY(1px) scale(.975);}
+  .template-card:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
   .template-card.selected{outline:3px solid var(--template-accent);outline-offset:2px;background:var(--paper-deep);}
   .template-card[data-template-theme="anniversary"].selected{position:relative;outline-color:transparent;}
   .template-card[data-template-theme="anniversary"].selected::after{content:"";position:absolute;inset:-5px;
@@ -257,8 +318,8 @@
   #scene-decorate{gap:10px;}
   .decorate-stage-wrap{width:100%;max-width:260px;}
   #decorateStage{position:relative;width:100%;aspect-ratio:1/3;background-size:cover;background-position:center;
-    border:2.6px solid var(--ink);border-radius:6px;box-shadow:3px 4px 0 rgba(0,0,0,.15);overflow:hidden;touch-action:none;}
-  #decorateStage canvas.stage-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;}
+    border:2.6px solid var(--ink);border-radius:6px;box-shadow:3px 4px 0 rgba(0,0,0,.15);overflow:hidden;touch-action:pan-y;}
+  #decorateStage canvas.stage-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;pointer-events:none;}
   .stage-error-msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
     flex-direction:column;gap:6px;padding:16px;text-align:center;font-family:'Gaegu',cursive;font-size:.85rem;
     color:var(--ink-soft);background:var(--paper);z-index:1;}
@@ -299,6 +360,19 @@
     transition:color .16s ease,transform .16s ease;vertical-align:baseline;}
   .share-handle:hover{color:#765778;transform:translateY(-1px);}
   .share-handle.copied{color:var(--green);}
+  .save-fallback{position:fixed;inset:0;z-index:250;display:none;align-items:center;justify-content:center;
+    padding:18px;background:rgba(43,45,66,.48);}
+  .save-fallback.show{display:flex;}
+  .save-fallback-dialog{position:relative;width:min(92vw,430px);max-height:92vh;overflow:auto;padding:20px;
+    border:3px solid var(--ink);border-radius:18px;background:var(--paper);box-shadow:5px 7px 0 rgba(43,45,66,.3);
+    text-align:center;}
+  .save-fallback-close{position:absolute;top:10px;right:10px;width:34px;height:34px;padding:0;
+    border:2px solid var(--ink);border-radius:50%;background:var(--paper-deep);font-size:1.2rem;}
+  .save-fallback-title{margin:0 36px 10px;font-family:'Caveat',cursive;font-size:1.45rem;}
+  .save-fallback-copy{margin:0 0 12px;font-family:'Gaegu',cursive;color:var(--ink-soft);}
+  .save-fallback-image{display:block;width:auto;max-width:100%;max-height:68vh;margin:0 auto;border-radius:4px;
+    box-shadow:3px 4px 0 rgba(0,0,0,.13);pointer-events:auto;touch-action:auto;-webkit-touch-callout:default;
+    -webkit-user-select:auto;user-select:auto;}
   @media (max-width:420px){
     .share-prompt{width:min(94vw,340px);padding:10px 12px;}
     .share-prompt-title{font-size:1.16rem;}
@@ -318,6 +392,7 @@
     border:2.4px solid var(--ink);border-top:0;border-radius:0 0 4px 5px;transform:rotate(.8deg);}
   .signpost-btn{position:relative;z-index:1;width:100%;
     padding:clamp(3px,5cqw,6px) clamp(2px,3cqw,5px);
+    min-height:24px;
     font-size:clamp(7.5px,16cqw,13px);line-height:1.15;
     border:1.6px solid var(--ink);border-radius:7px 5px 8px 6px/6px 8px 5px 7px;background:var(--paper-deep);
     box-shadow:1px 1.5px 0 var(--ink);transition:transform .15s,box-shadow .15s;pointer-events:auto;
@@ -346,6 +421,7 @@
     .sign-title{font-size:1.9rem;}
     .countdown-num{font-size:5rem;}
     .info-modal-dialog{padding:26px 20px 20px;}
+    .coin-token-btn{left:calc(100% - 44px);}
   }
 
   /* ============ SITE FOOTER ============ */
@@ -362,7 +438,7 @@
   .frame-notice.show{display:block;}
   @media (hover:hover) and (pointer:fine){
     .btn:not([disabled]):hover,.flip-btn:hover,.palette-item:hover,.signpost-btn:hover,.info-modal-close:hover{transform:translateY(-2px);}
-    .coin-slot-btn:not(.inserting):hover{transform:translateY(-2px);}
+    .coin-token-btn:not(.inserting):hover{transform:translateY(-3px) scale(1.035);filter:brightness(1.02);}
     .template-card:not(.locked):hover{transform:translateY(-4px) rotate(-.45deg);box-shadow:3px 6px 0 rgba(0,0,0,.12);}
     .template-card:not(.locked):nth-child(even):hover{transform:translateY(-4px) rotate(.45deg);}
   }
@@ -370,7 +446,10 @@
     .scene.active,.scene.retake-leaving,.template-card,.template-card.selection-pop,.countdown-num,
     .cam-flash.go,.shot-count.pop,.door-hit.ringing,.camera-status.ready{animation:none!important;}
     .btn,.flip-btn,.template-card,.palette-item,.signpost-btn,.info-modal-close,.sticker,.coin-slot-btn{transition:none!important;}
-    #coin-flying.insert,.coin-slot-btn.accepting,.coin-slot-btn.accepting .slot-glow,.coin-credit-feedback.show{animation:none!important;}
+    #coin-flying.approach,#coin-flying.enter,.coin-token-btn.pickup,.coin-slot-btn.accepting,
+    .coin-slot-btn.accepting .slot-glow,.coin-slot-btn.accepting .coin-slot-lip::after,
+    .coin-credit-feedback.show,.coin-machine-wrap.wake{animation:none!important;}
+    .standee-dots circle{animation:none!important;}
     .camera-status.ready{opacity:0;}
   }
 </style>
@@ -388,7 +467,6 @@
   </defs>
 </svg>
 
-<div id="coin-flying"></div>
 <audio id="uiClickSfx" src="./assets/media/ui-click.wav" preload="auto"></audio>
 <audio id="doorbellSfx" src="./assets/media/doorbell.mp3" preload="auto"></audio>
 <audio id="shutterSfx" src="./assets/media/shutter.mp3" preload="auto"></audio>
@@ -411,7 +489,7 @@
       <!-- walls -->
       <rect class="hand-fill" x="140" y="246" width="520" height="330" />
       <!-- door (right side, clickable) -->
-      <g class="door-hit" id="doorHit" data-audio-special="doorbell">
+      <g class="door-hit" id="doorHit" data-audio-special="doorbell" role="button" tabindex="0" aria-label="Enter the photobooth">
         <path class="hand-fill" d="M 470 576 L 470 400 Q 470 358 520 358 Q 570 358 570 400 L 570 576 Z" fill="#e9d9a8"/>
         <circle cx="552" cy="470" r="4.4" fill="var(--ink)"/>
       </g>
@@ -440,11 +518,20 @@
       <div class="signpost-post" aria-hidden="true"></div>
     </aside>
 
-    <!-- Welcome banner PNG — replaces the old inline SVG triangle standee. Positioned to match
-         the removed standee's bounding box (translate(596,438) scale(0.62) over an 800x620
-         viewBox), expressed as % of .hero-shop-wrap so it stays put across screen sizes, same
-         technique as #shopWindowVideo just above. -->
-    <img class="welcome-banner-img" src="welcome-banner.png" alt="Welcome PLLI banner" style="left: 71%; bottom: 6.8%; width: 22%;">
+    <!-- Code-rendered A-frame welcome sign. The original welcome-banner.png remains in the
+         project as a temporary visual fallback/rollback asset while this version is verified. -->
+    <div class="welcome-sign" role="img" aria-label="Welcome Plli sidewalk sign">
+      <div class="welcome-sign__rear" aria-hidden="true"></div>
+      <div class="welcome-sign__hatch" aria-hidden="true"></div>
+      <div class="welcome-sign__brace" aria-hidden="true"></div>
+      <div class="welcome-sign__rear-foot" aria-hidden="true"></div>
+      <div class="welcome-sign__leg welcome-sign__leg--left" aria-hidden="true"></div>
+      <div class="welcome-sign__leg welcome-sign__leg--right" aria-hidden="true"></div>
+      <div class="welcome-sign__front" aria-hidden="true"></div>
+      <span class="welcome-sign__screw welcome-sign__screw--left" aria-hidden="true"></span>
+      <span class="welcome-sign__screw welcome-sign__screw--right" aria-hidden="true"></span>
+      <p class="welcome-sign__text">Welcome<br>Plli!</p>
+    </div>
     <!-- TV screen positioned exactly over the shop window rect (viewBox 0 0 800 620 -> % of wrap) -->
    <div class="shop-window-video" id="shopWindowVideo" style="left:22%; top:48%; width:28.75%; height:26%;">
   <video id="shopTV" src="./assets/media/window.mp4" autoplay muted loop playsinline poster=""></video>
@@ -464,26 +551,35 @@
   <h2 class="scene-title">welcome in ✧</h2>
   <p class="sign-sub">pop a coin in to begin</p>
 
-  <div class="coin-machine-wrap">
-    <svg viewBox="0 0 280 340" width="100%" style="filter:url(#wobble1)">
-      <rect class="hand-fill" x="20" y="20" width="240" height="300" rx="20"/>
-      <rect x="46" y="46" width="188" height="120" rx="8" fill="#f7f2e2" stroke="var(--ink)" stroke-width="2"/>
-      <text x="140" y="90" text-anchor="middle" class="doodle" font-size="20" fill="var(--ink)">INSERT</text>
-      <text x="140" y="118" text-anchor="middle" class="doodle" font-size="24" fill="var(--red)">COIN</text>
-      <text x="140" y="148" text-anchor="middle" class="doodle" font-size="13" fill="var(--ink-soft)">to start your shoot</text>
-    </svg>
-  </div>
+  <div class="coin-interaction-stage">
+    <div class="coin-machine-wrap">
+      <svg viewBox="0 0 280 340" width="100%" style="filter:url(#wobble1)">
+        <rect class="hand-fill" x="20" y="20" width="240" height="300" rx="20"/>
+        <rect x="46" y="46" width="188" height="120" rx="8" fill="#f7f2e2" stroke="var(--ink)" stroke-width="2"/>
+        <text x="140" y="90" text-anchor="middle" class="doodle" font-size="20" fill="var(--ink)">INSERT</text>
+        <text x="140" y="118" text-anchor="middle" class="doodle" font-size="24" fill="var(--red)">COIN</text>
+        <text x="140" y="148" text-anchor="middle" class="doodle" font-size="13" fill="var(--ink-soft)">to start your shoot</text>
+      </svg>
+    </div>
 
-  <button class="coin-slot-btn" id="coinBtn" aria-label="Insert coin to start" data-audio-special="coin">
-    <svg viewBox="0 0 180 100" width="180" style="filter:url(#wobble1)">
-      <rect class="hand-fill" x="10" y="10" width="160" height="80" rx="16"/>
-      <ellipse class="slot-glow" cx="90" cy="50" rx="26" ry="10" fill="var(--blue)" opacity=".5"/>
-      <rect x="76" y="42" width="28" height="16" rx="7" fill="var(--ink)"/>
-      <text x="90" y="80" text-anchor="middle" class="doodle" font-size="13" fill="var(--ink)">insert coin</text>
-    </svg>
-    <span class="coin-credit-feedback" id="coinCreditFeedback" aria-live="polite">READY ✓</span>
-  </button>
-  <p class="coin-hint">tap the slot ✧</p>
+    <div class="coin-slot-btn" id="coinSlot" aria-label="Coin slot">
+      <svg viewBox="0 0 180 100" width="180" style="filter:url(#wobble1)">
+        <rect class="hand-fill" x="10" y="10" width="160" height="80" rx="16"/>
+        <ellipse class="slot-glow" cx="90" cy="50" rx="26" ry="10" fill="var(--blue)" opacity=".5"/>
+        <rect x="76" y="42" width="28" height="16" rx="7" fill="var(--ink)"/>
+        <text x="90" y="80" text-anchor="middle" class="doodle" font-size="13" fill="var(--ink)">insert coin</text>
+      </svg>
+      <span class="coin-slot-lip" aria-hidden="true"></span>
+      <span class="coin-credit-feedback" id="coinCreditFeedback" aria-live="polite">READY ✓</span>
+    </div>
+    <button class="coin-token-btn" id="coinBtn" type="button" aria-label="Insert coin to start" data-audio-special="coin">
+      <img class="coin-art coin-token-art" src="./assets/media/coin.png" alt="" draggable="false">
+    </button>
+    <span class="coin-flight-clip" id="coinFlightClip" aria-hidden="true">
+      <span id="coin-flying"></span>
+    </span>
+  </div>
+  <p class="coin-hint">tap the coin ✦</p>
 </section>
 
 <!-- ============================================================ -->
@@ -583,6 +679,7 @@
   <div class="result-actions">
     <button class="btn" id="downloadBtn">⬇ download strip</button>
     <button class="btn small" id="retakeBtn">↺ retake</button>
+    <button class="btn small" id="chooseAnotherBtn">choose another frame</button>
     <button class="btn small" id="homeBtn">🏠 outside</button>
   </div>
   <aside class="share-prompt" aria-label="Sharing reminder">
@@ -593,6 +690,15 @@
   </aside>
   <footer class="site-footer">Created with ♥ by <a href="https://lit.link/en/mypllidduks" target="_blank" rel="noopener noreferrer">MYPlliDduks</a></footer>
 </section>
+
+<div class="save-fallback" id="saveFallback" role="dialog" aria-modal="true" aria-labelledby="saveFallbackTitle" aria-hidden="true">
+  <div class="save-fallback-dialog">
+    <button class="save-fallback-close" id="saveFallbackClose" type="button" aria-label="Close save instructions">×</button>
+    <h2 class="save-fallback-title" id="saveFallbackTitle">Save your strip ♡</h2>
+    <p class="save-fallback-copy">Tap and hold the image, then choose Save to Photos.</p>
+    <img class="save-fallback-image" id="saveFallbackImage" alt="Your completed Asterum photobooth strip">
+  </div>
+</div>
 
 <!-- ============================================================ -->
 <!-- INFORMATION MODALS                                            -->
@@ -645,8 +751,11 @@
   "use strict";
 
   /* ---------------- viewport dvh guard for old iOS ---------------- */
+  var lastViewportHeight = 0;
   function setVH(){
-    document.documentElement.style.setProperty('--vh', (window.innerHeight)+'px');
+    if(Math.abs(window.innerHeight - lastViewportHeight) < 1) return;
+    lastViewportHeight = window.innerHeight;
+    document.documentElement.style.setProperty('--vh', lastViewportHeight+'px');
   }
   setVH();
   window.addEventListener('resize', setVH);
@@ -654,7 +763,17 @@
 
   /* ---------------- paper grain canvas ---------------- */
   var grain = document.getElementById('grain');
-  function sizeGrain(){ grain.width = innerWidth; grain.height = innerHeight; drawGrain(); }
+  var grainResizeTimer = null;
+  var grainWidth = 0, grainHeight = 0;
+  function sizeGrain(){
+    if(grainWidth === innerWidth && grainHeight === innerHeight) return;
+    grainWidth = innerWidth; grainHeight = innerHeight;
+    grain.width = grainWidth; grain.height = grainHeight; drawGrain();
+  }
+  function scheduleGrainResize(){
+    clearTimeout(grainResizeTimer);
+    grainResizeTimer = setTimeout(sizeGrain, 120);
+  }
   function drawGrain(){
     var ctx = grain.getContext('2d');
     var w = grain.width, h = grain.height;
@@ -665,7 +784,7 @@
     }
     ctx.putImageData(img,0,0);
   }
-  window.addEventListener('resize', sizeGrain);
+  window.addEventListener('resize', scheduleGrainResize, {passive:true});
   sizeGrain();
 
   /* ---------------- font readiness helper ---------------- */
@@ -748,6 +867,10 @@ playShopMV();
     var unlocked = false;
     var lastStarted = {};
 
+    // Keep the single reusable coin element warm so its first play is as responsive
+    // as later plays. preload="auto" handles the fetch; load() prompts early decode.
+    try{ if(elements.coin) elements.coin.load(); }catch(e){}
+
     function unlock(){
       unlocked = true;
     }
@@ -817,7 +940,7 @@ playShopMV();
     var lastX = -100, lastY = -100, lastAt = 0;
     var colors = ['var(--blue)','var(--purple)','var(--pink)','var(--green)'];
 
-    function enabled(){ return finePointer.matches && !reduceMotion.matches; }
+    function enabled(){ return finePointer.matches && !reduceMotion.matches && !document.body.classList.contains('coin-transitioning'); }
     function removeParticle(particle){
       var index = particles.indexOf(particle);
       if(index !== -1) particles.splice(index,1);
@@ -878,27 +1001,53 @@ playShopMV();
     }
     doorHit.addEventListener('animationend', finishDoor);
   });
+  doorHit.addEventListener('keydown', function(event){
+    if(event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    doorHit.click();
+  });
   document.getElementById('backToOutsideBtn').addEventListener('click', function(){
     showScene('outside');
   });
 
   /* ---------------- coin -> template picker ---------------- */
   var coinBtn = document.getElementById('coinBtn');
+  var coinSlot = document.getElementById('coinSlot');
+  var coinStage = document.querySelector('.coin-interaction-stage');
+  var coinFlightClip = document.getElementById('coinFlightClip');
   var coinFly = document.getElementById('coin-flying');
+  var coinMachine = document.querySelector('.coin-machine-wrap');
   var coinCreditFeedback = document.getElementById('coinCreditFeedback');
   var coinInserting = false;
   coinBtn.addEventListener('click', function(){
     if(coinInserting) return;
     coinInserting = true;
-    coinBtn.classList.add('inserting');
-    var slotRect = coinBtn.getBoundingClientRect();
-    coinFly.style.setProperty('--coin-slot-x', (slotRect.left + slotRect.width/2)+'px');
-    coinFly.style.setProperty('--coin-slot-y', (slotRect.top + slotRect.height*.5)+'px');
+    document.body.classList.add('coin-transitioning');
+    coinBtn.classList.add('inserting','pickup');
+    var stageRect = coinStage.getBoundingClientRect();
+    var coinRect = coinBtn.getBoundingClientRect();
+    var slotRect = coinSlot.querySelector('.coin-slot-lip').getBoundingClientRect();
+    var startX = coinRect.left + coinRect.width/2 - stageRect.left;
+    var startY = coinRect.top + coinRect.height/2 - stageRect.top;
+    var dx = slotRect.left + slotRect.width/2 - (stageRect.left + startX);
+    var dy = slotRect.top + slotRect.height/2 - (stageRect.top + startY);
+    coinFly.style.setProperty('--coin-start-x', startX+'px');
+    coinFly.style.setProperty('--coin-start-y', startY+'px');
+    coinFly.style.setProperty('--coin-dx', dx+'px');
+    coinFly.style.setProperty('--coin-dy', dy+'px');
+    coinFly.style.setProperty('--coin-x1', (dx*.2)+'px');
+    coinFly.style.setProperty('--coin-y1', '-10px');
+    coinFly.style.setProperty('--coin-x2', (dx*.68)+'px');
+    coinFly.style.setProperty('--coin-y2', (dy*.52-14)+'px');
+    coinFlightClip.style.setProperty('--coin-clip-height', (slotRect.top + slotRect.height/2 - stageRect.top)+'px');
 
     function continueToTemplates(){
-      coinFly.classList.remove('insert');
-      coinBtn.classList.remove('inserting','accepting');
+      coinFly.classList.remove('approach','enter');
+      coinBtn.classList.remove('inserting','pickup');
+      coinSlot.classList.remove('accepting');
+      coinMachine.classList.remove('wake');
       coinCreditFeedback.classList.remove('show');
+      document.body.classList.remove('coin-transitioning');
       coinInserting = false;
       showScene('template');
     }
@@ -909,13 +1058,18 @@ playShopMV();
       return;
     }
 
-    coinFly.classList.remove('insert'); void coinFly.offsetWidth; coinFly.classList.add('insert');
+    coinFly.classList.add('approach');
     function coinArrived(event){
-      if(event.animationName !== 'coinInsert') return;
+      if(event.animationName !== 'coinApproach') return;
       coinFly.removeEventListener('animationend', coinArrived);
+      // Contact is the single shared trigger for sound, slot mechanics and panel wake-up.
       coinSound();
-      coinBtn.classList.add('accepting');
-      coinCreditFeedback.classList.remove('show'); void coinCreditFeedback.offsetWidth; coinCreditFeedback.classList.add('show');
+      coinBtn.classList.remove('pickup');
+      coinSlot.classList.add('accepting');
+      coinMachine.classList.add('wake');
+      coinFly.classList.remove('approach');
+      coinFly.classList.add('enter');
+      coinCreditFeedback.classList.add('show');
       function readyShown(readyEvent){
         if(readyEvent.animationName !== 'creditReady') return;
         coinCreditFeedback.removeEventListener('animationend', readyShown);
@@ -1014,6 +1168,7 @@ playShopMV();
 
   var templateGrid = document.getElementById('templateGrid');
   var templateContinueBtn = document.getElementById('templateContinueBtn');
+  var templateThumbnailDecodes = [];
   // Picker-only order. TEMPLATES itself stays in its original order so every
   // template ID and all existing runtime fallbacks keep their current behavior.
   var templateDisplayOrder = ['template-d', 'plave-3rd-anniv', 'template-a', 'template-b', 'template-c'];
@@ -1027,7 +1182,8 @@ playShopMV();
   templateDisplayOrder.forEach(function(id, displayIndex){
     var t = TEMPLATES.find(function(template){ return template.id === id; });
     if(!t) return;
-    var card = document.createElement('div');
+    var card = document.createElement(t.comingSoon ? 'div' : 'button');
+    if(!t.comingSoon) card.type = 'button';
     card.className = 'template-card'+(t.comingSoon ? ' locked' : '');
     card.dataset.id = t.id;
     card.style.setProperty('--card-index', displayIndex);
@@ -1065,8 +1221,11 @@ playShopMV();
 
     var img = document.createElement('img');
     img.alt = t.name;
+    img.loading = 'eager';
+    img.decoding = 'async';
     img.src = t.frameMask;
     img.onerror = function(){ img.replaceWith(placeholderThumb(t)); };
+    if(img.decode) templateThumbnailDecodes.push(img.decode().catch(function(){}));
     card.appendChild(img);
 
     // 模板名字
@@ -1110,16 +1269,18 @@ playShopMV();
     // the die-cut frame warning applies to templates with hand-measured, non-rectangular cutouts
     // (3rd Anniversary Frame's hearts, Bamline's Gathering's heart window + icon/ribbon notches) —
     // plain stack4 templates use even rectangular cuts and don't need the warning.
-    frameNotice.classList.toggle('show', selectedTemplate.layout === 'grid2x3' || selectedTemplate.layout === 'bambyframe');
+    frameNotice.classList.toggle('show', selectedTemplate.layout === 'grid2x3' || selectedTemplate.layout === 'bambyframe' || selectedTemplate.layout === 'yejunframe');
     showScene('booth');
     startCamera();
   });
 
   document.getElementById('backOutBtn').addEventListener('click', function(){
     stopCamera();
+    resetShootState();
     showScene('template');
   });
   document.getElementById('homeBtn').addEventListener('click', function(){
+    resetForTemplateChoice(true);
     showScene('outside');
   });
 
@@ -1131,6 +1292,7 @@ playShopMV();
   var boothFrameWrap = document.querySelector('.booth-frame-wrap');
   var frameNotice = document.getElementById('frameNotice');
   var facingMode = 'user';
+  var cameraRequestId = 0;
 
   function applyMirrorClass(){
     camVideo.classList.toggle('mirror', facingMode === 'user');
@@ -1138,6 +1300,7 @@ playShopMV();
 
   function startCamera(){
     stopCamera();
+    var requestId = cameraRequestId;
     cameraStatus.textContent = 'starting camera…';
     cameraStatus.className = 'camera-status starting';
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
@@ -1148,6 +1311,10 @@ playShopMV();
     }
     navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:facingMode}}, audio:false})
       .then(function(s){
+        if(requestId !== cameraRequestId || !scenes.booth.classList.contains('active')){
+          s.getTracks().forEach(function(track){ track.stop(); });
+          return;
+        }
         stream = s;
         camVideo.srcObject = s;
         camMsg.style.display='none';
@@ -1158,8 +1325,13 @@ playShopMV();
         }
         if(camVideo.readyState >= 2) markCameraReady();
         else camVideo.addEventListener('playing', markCameraReady, {once:true});
+        try{
+          var cameraPlay = camVideo.play();
+          if(cameraPlay && cameraPlay.catch) cameraPlay.catch(function(){});
+        }catch(e){}
       })
       .catch(function(err){
+        if(requestId !== cameraRequestId) return;
         cameraStatus.className = 'camera-status';
         camMsg.style.display='flex';
         camMsg.innerHTML = '';
@@ -1175,8 +1347,22 @@ playShopMV();
       });
   }
   function stopCamera(){
+    cameraRequestId++;
     if(stream){ stream.getTracks().forEach(function(t){t.stop();}); stream=null; }
+    try{ camVideo.pause(); camVideo.srcObject = null; }catch(e){}
   }
+  window.addEventListener('pagehide', stopCamera);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState !== 'visible' || !scenes.booth.classList.contains('active')) return;
+    var videoTrack = stream && stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
+    if(!videoTrack || videoTrack.readyState === 'ended') startCamera();
+    else {
+      try{
+        var resumePlay = camVideo.play();
+        if(resumePlay && resumePlay.catch) resumePlay.catch(function(){});
+      }catch(e){}
+    }
+  });
   document.getElementById('flipCamBtn').addEventListener('click', function(){
     facingMode = (facingMode === 'user') ? 'environment' : 'user';
     startCamera();
@@ -1236,33 +1422,62 @@ playShopMV();
   var captured = []; // canvases, full color
   var currentShotIndex = 0; // 0-based, next shot to take
   var isShooting = false;
+  var shootSessionId = 0;
+  var countdownRunId = 0;
 
   function shotsTotal(){ return (selectedTemplate && selectedTemplate.shots) || 4; }
 
   function resetShootState(){
+    shootSessionId++;
+    countdownRunId++;
     captured = [];
     currentShotIndex = 0;
     isShooting = false;
     baseCanvas = null; // force a fresh composite next time enterPrintStage()/enterDecorateStage() runs
+    cachedFinalPngSourcePromise = null;
     shootBtn.disabled = false;
     shootBtn.classList.remove('hide');
     shootBtn.textContent = '📷 Take Photo (1/'+shotsTotal()+')';
     shotCountEl.textContent = 'Captured 0 / '+shotsTotal();
     shotCountEl.classList.remove('pop');
+    countdownOverlay.classList.remove('show');
+    countdownNum.classList.remove('pop');
+    flashEl.classList.remove('go');
     loadPoseForShot(0);
+  }
+
+  function resetForTemplateChoice(clearSelection){
+    stopCamera();
+    AudioManager.stopAll();
+    if(typeof closeSaveFallback === 'function') closeSaveFallback();
+    if(Array.isArray(stickers)){
+      stickers.forEach(function(sticker){ if(sticker.el) sticker.el.remove(); });
+      stickers = [];
+    }
+    if(clearSelection){
+      selectedTemplate = null;
+      Array.prototype.forEach.call(templateGrid.children, function(card){ card.classList.remove('selected'); });
+      templateContinueBtn.disabled = true;
+    }
+    resetShootState();
   }
 
   function wait(ms){ return new Promise(function(res){ setTimeout(res, ms); }); }
 
   function doCountdown(){
     return new Promise(function(resolve){
+      var runId = ++countdownRunId;
       var n = 5;
       countdownOverlay.classList.add('show');
       function tick(){
+        if(runId !== countdownRunId){ resolve(false); return; }
         countdownNum.textContent = n;
         countdownNum.classList.remove('pop'); void countdownNum.offsetWidth; countdownNum.classList.add('pop');
         if(n<=1){
-          setTimeout(function(){ countdownOverlay.classList.remove('show'); resolve(); }, 620);
+          setTimeout(function(){
+            if(runId !== countdownRunId){ resolve(false); return; }
+            countdownOverlay.classList.remove('show'); resolve(true);
+          }, 620);
         } else {
           n--; setTimeout(tick, 620);
         }
@@ -1439,9 +1654,17 @@ playShopMV();
     if(currentShotIndex >= shotsTotal()) return;
     isShooting = true;
     shootBtn.disabled = true;
+    var activeSessionId = shootSessionId;
 
     (async function(){
-      await doCountdown();
+      var countdownCompleted = await doCountdown();
+      if(!countdownCompleted || activeSessionId !== shootSessionId || !scenes.booth.classList.contains('active') || !stream){
+        if(activeSessionId === shootSessionId){
+          shootBtn.disabled = false;
+          isShooting = false;
+        }
+        return;
+      }
       var capturedShot;
       try{ capturedShot = captureFrame(); }
       catch(captureError){
@@ -1619,9 +1842,10 @@ playShopMV();
       s.y = Math.min(1, Math.max(0, ny));
       layoutSticker(s);
     });
-    function endDrag(){
+    function endDrag(ev){
       if(!dragging) return;
       dragging=false;
+      if(ev && el.hasPointerCapture && el.hasPointerCapture(ev.pointerId)) el.releasePointerCapture(ev.pointerId);
       el.classList.remove('is-dragging');
       el.classList.add('is-settling');
       requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.remove('is-settling'); }); });
@@ -1652,7 +1876,10 @@ playShopMV();
       s.rotation = (Math.atan2(dy, dx) * 180/Math.PI) - 45;
       layoutSticker(s);
     });
-    function endResize(){ resizing=false; }
+    function endResize(ev){
+      resizing=false;
+      if(ev && handle.hasPointerCapture && handle.hasPointerCapture(ev.pointerId)) handle.releasePointerCapture(ev.pointerId);
+    }
     handle.addEventListener('pointerup', endResize);
     handle.addEventListener('pointercancel', endResize);
 
@@ -1804,11 +2031,12 @@ playShopMV();
     btn.disabled = true;
     try{
       await renderFinalStrip();
+      showScene('result');
     }catch(err){
-      console.error('renderFinalStrip failed, showing whatever was drawn so far:', err);
+      console.error('renderFinalStrip failed:', err);
+      alert('We couldn\'t prepare your photo strip. Please try again.');
     }finally{
       btn.disabled = false;
-      showScene('result');
     }
   });
 
@@ -1851,44 +2079,181 @@ playShopMV();
         ctx.restore();
       }
     });
+    // Prepare the PNG before the save tap so iOS can call navigator.share()
+    // while the user's transient activation is still available.
+    cachedFinalPngSourcePromise = canvasPngSource(stripCanvas);
+    await cachedFinalPngSourcePromise;
   }
 
   var downloadBtn = document.getElementById('downloadBtn');
   var downloadDefaultLabel = downloadBtn.textContent;
   var downloadResetTimer = null;
-  downloadBtn.addEventListener('click', function(){
-    var stripCanvas = document.getElementById('stripCanvas');
+  var downloadInProgress = false;
+  var cachedFinalPngSourcePromise = null;
+  var activeSavePreviewUrl = null;
+  var saveFallback = document.getElementById('saveFallback');
+  var saveFallbackImage = document.getElementById('saveFallbackImage');
+  var saveFallbackClose = document.getElementById('saveFallbackClose');
+
+  function isIOSDevice(){
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
+  function downloadFilename(){
+    var slugs = {
+      'template-d':'noahs-gym-club',
+      'plave-3rd-anniv':'reves-in-my-ast3rum',
+      'template-a':'bamlines-gathering',
+      'template-b':'whisper-from-the-deep-blue'
+    };
+    var templateSlug = selectedTemplate ? (slugs[selectedTemplate.id] || selectedTemplate.id) : 'strip';
+    var date = new Date().toISOString().slice(0,10);
+    return 'asterum-photobooth-' + templateSlug + '-' + date + '.png';
+  }
+
+  function canvasPngSource(canvas){
+    return new Promise(function(resolve, reject){
+      function dataUrlFallback(){
+        try{
+          var dataUrl = canvas.toDataURL('image/png');
+          if(!dataUrl || dataUrl === 'data:,') throw new Error('empty PNG data');
+          resolve({dataUrl:dataUrl});
+        }catch(error){ reject(error); }
+      }
+      if(!canvas.toBlob){ dataUrlFallback(); return; }
+      try{
+        canvas.toBlob(function(blob){
+          if(blob && blob.size > 0){ resolve({blob:blob}); return; }
+          dataUrlFallback();
+        }, 'image/png');
+      }catch(error){ dataUrlFallback(); }
+    });
+  }
+
+  function closeSaveFallback(){
+    saveFallback.classList.remove('show');
+    saveFallback.setAttribute('aria-hidden', 'true');
+    saveFallbackImage.removeAttribute('src');
+    if(activeSavePreviewUrl){
+      URL.revokeObjectURL(activeSavePreviewUrl);
+      activeSavePreviewUrl = null;
+    }
+  }
+
+  function isShareCancellation(error){
+    return !!error && (error.name === 'AbortError' || error.name === 'NotAllowedError' && /cancel/i.test(error.message || ''));
+  }
+
+  async function shareOnIOS(source){
+    if(!source.blob || typeof File !== 'function' || typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function'){
+      return false;
+    }
+    var file = new File([source.blob], downloadFilename(), {
+      type:'image/png',
+      lastModified:Date.now()
+    });
+    var shareData = {files:[file]};
+    var canShareFiles = false;
+    try{ canShareFiles = navigator.canShare(shareData); }catch(error){ canShareFiles = false; }
+    if(!canShareFiles) return false;
     try{
-      var link = document.createElement('a');
-      link.download = 'asterum-photobooth-strip.png';
-      link.href = stripCanvas.toDataURL('image/png');
-      link.click();
-      downloadBtn.textContent = '✓ Downloaded';
-      downloadBtn.classList.add('download-success');
-      clearTimeout(downloadResetTimer);
-      downloadResetTimer = setTimeout(function(){
-        downloadBtn.textContent = downloadDefaultLabel;
-        downloadBtn.classList.remove('download-success');
-      }, 1300);
+      await navigator.share(shareData);
+      return true;
+    }catch(error){
+      if(isShareCancellation(error)) return true;
+      throw error;
+    }
+  }
+
+  function showSaveFallback(source){
+    closeSaveFallback();
+    if(source.blob){
+      activeSavePreviewUrl = URL.createObjectURL(source.blob);
+      saveFallbackImage.src = activeSavePreviewUrl;
+    }else{
+      saveFallbackImage.src = source.dataUrl;
+    }
+    saveFallback.classList.add('show');
+    saveFallback.setAttribute('aria-hidden', 'false');
+    saveFallbackClose.focus();
+  }
+
+  function setDownloadFeedback(label, success){
+    downloadBtn.textContent = label;
+    downloadBtn.classList.toggle('download-success', !!success);
+    clearTimeout(downloadResetTimer);
+    downloadResetTimer = setTimeout(function(){
+      downloadBtn.textContent = downloadDefaultLabel;
+      downloadBtn.classList.remove('download-success');
+    }, 1300);
+  }
+
+  saveFallbackClose.addEventListener('click', closeSaveFallback);
+  saveFallback.addEventListener('click', function(event){ if(event.target === saveFallback) closeSaveFallback(); });
+
+  downloadBtn.addEventListener('click', async function(){
+    if(downloadInProgress) return;
+    downloadInProgress = true;
+    downloadBtn.disabled = true;
+    try{
+      var stripCanvas = document.getElementById('stripCanvas');
+      if(!stripCanvas.width || !stripCanvas.height) throw new Error('empty result canvas');
+      var source = await (cachedFinalPngSourcePromise || canvasPngSource(stripCanvas));
+      if(isIOSDevice()){
+        try{
+          var shared = await shareOnIOS(source);
+          if(!shared) showSaveFallback(source);
+        }catch(shareError){
+          console.warn('iOS file sharing unavailable; showing save image instead.', shareError);
+          showSaveFallback(source);
+        }
+      }else{
+        var objectUrl = source.blob ? URL.createObjectURL(source.blob) : null;
+        var link = document.createElement('a');
+        link.download = downloadFilename();
+        link.href = objectUrl || source.dataUrl;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        if(objectUrl) setTimeout(function(){ URL.revokeObjectURL(objectUrl); }, 60000);
+        setDownloadFeedback('✓ Download started', true);
+      }
     }catch(err){
-      console.error('download failed (likely a tainted canvas from local file:// images):', err);
-      alert('Download failed: for security reasons, browsers won\'t export a canvas that contains local file:// images.\n\nPlease try opening this page from a local server instead, e.g. run:\npython3 -m http.server\nthen visit http://localhost:8000/ instead of double-clicking the HTML file.');
+      console.error('download failed:', err);
+      setDownloadFeedback('Save failed', false);
+      alert('We couldn\'t save your photo strip. Please try again.');
+    }finally{
+      downloadInProgress = false;
+      downloadBtn.disabled = false;
     }
   });
 
   var shareHandleBtn = document.getElementById('shareHandleBtn');
   var shareHandleResetTimer = null;
   shareHandleBtn.addEventListener('click', function(){
-    if(!navigator.clipboard || !navigator.clipboard.writeText) return;
+    function restoreShareHandle(){
+      shareHandleBtn.textContent = '@MYPlliDduks';
+      shareHandleBtn.classList.remove('copied');
+    }
+    if(!navigator.clipboard || !navigator.clipboard.writeText){
+      shareHandleBtn.textContent = 'Copy unavailable';
+      clearTimeout(shareHandleResetTimer);
+      shareHandleResetTimer = setTimeout(restoreShareHandle, 1300);
+      return;
+    }
     navigator.clipboard.writeText('@MYPlliDduks').then(function(){
       shareHandleBtn.textContent = 'Copied! ♡';
       shareHandleBtn.classList.add('copied');
       clearTimeout(shareHandleResetTimer);
-      shareHandleResetTimer = setTimeout(function(){
-        shareHandleBtn.textContent = '@MYPlliDduks';
-        shareHandleBtn.classList.remove('copied');
-      }, 1300);
-    }).catch(function(){});
+      shareHandleResetTimer = setTimeout(restoreShareHandle, 1300);
+    }).catch(function(){
+      shareHandleBtn.textContent = 'Copy unavailable';
+      shareHandleBtn.classList.remove('copied');
+      clearTimeout(shareHandleResetTimer);
+      shareHandleResetTimer = setTimeout(restoreShareHandle, 1300);
+    });
   });
 
   document.getElementById('retakeBtn').addEventListener('click', function(){
@@ -1897,6 +2262,11 @@ playShopMV();
       stickers = [];
       resetShootState();
     });
+  });
+
+  document.getElementById('chooseAnotherBtn').addEventListener('click', function(){
+    resetForTemplateChoice(true);
+    showScene('template');
   });
 
 })();
