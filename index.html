@@ -204,10 +204,14 @@
   /* ============ SCENE 2 : TEMPLATE PICKER ============ */
   #scene-template{gap:10px;}
   .template-grid{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:640px;}
-  .template-card{width:150px;border:2.6px solid var(--ink);border-radius:14px;padding:8px;background:var(--paper);
+  .template-card{position:relative;width:150px;border:2.6px solid var(--ink);border-radius:14px;padding:8px;background:var(--paper);
     cursor:pointer;box-shadow:2px 3px 0 rgba(0,0,0,.12);transition:transform .18s ease,box-shadow .18s ease;
     animation:cardEnter .2s ease-out both;animation-delay:calc(var(--card-index,0) * 60ms);
     --template-accent:var(--blue);}
+  .template-card[data-new-badge="true"]::before{content:"NEW ✦";position:absolute;z-index:3;top:-8px;right:-8px;
+    padding:2px 7px;border:1.5px solid rgba(43,45,66,.7);border-radius:999px;background:var(--new-badge-bg);
+    color:var(--ink);font-family:'Gaegu',cursive;font-size:.67rem;font-weight:700;line-height:1.15;
+    letter-spacing:.035em;white-space:nowrap;box-shadow:1.5px 2px 0 rgba(43,45,66,.14);pointer-events:none;}
   @keyframes cardEnter{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
   .template-card:active{transform:translateY(1px) scale(.975);}
   .template-card:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
@@ -1143,10 +1147,10 @@
   // template ID and all existing runtime fallbacks keep their current behavior.
   var templateDisplayOrder = ['template-d', 'plave-3rd-anniv', 'template-a', 'template-b', 'template-c'];
   var templateThemes = {
-    'template-d': {name:'noah', accent:'var(--purple)'},
+    'template-d': {name:'noah', accent:'var(--purple)', newBadge:'#dcc8e6'},
     'plave-3rd-anniv': {name:'anniversary', accent:'var(--blue)'},
     'template-a': {name:'bamby', accent:'var(--pink)'},
-    'template-b': {name:'whisper', accent:'var(--blue)'},
+    'template-b': {name:'whisper', accent:'var(--blue)', newBadge:'#c8e6f2'},
     'template-c': {name:'hamin', accent:'var(--green)'}
   };
   templateDisplayOrder.forEach(function(id, displayIndex){
@@ -1160,6 +1164,10 @@
     var theme = templateThemes[t.id] || {name:'default', accent:'var(--blue)'};
     card.dataset.templateTheme = theme.name;
     card.style.setProperty('--template-accent', theme.accent);
+    if(theme.newBadge){
+      card.dataset.newBadge = 'true';
+      card.style.setProperty('--new-badge-bg', theme.newBadge);
+    }
 
     if(t.comingSoon){
       // never touch t.frameMask/t.poses here — nothing is loaded, so no path can ever leak into the UI.
