@@ -1108,7 +1108,7 @@
     },
     {
       id: 'template-c',
-      name: 'Hamin CSE',
+      name: 'Last Dance with Hamin',
       subtitle: '4 shots',
       shots: 4,
       layout: 'stack4',
@@ -1183,7 +1183,7 @@
 
       var lockedSubEl = document.createElement('div');
       lockedSubEl.className = 'template-shots locked-shots';
-      lockedSubEl.textContent = 'Coming soon';
+      lockedSubEl.textContent = t.subtitle || 'Coming soon';
       card.appendChild(lockedSubEl);
 
       card.setAttribute('aria-disabled', 'true');
