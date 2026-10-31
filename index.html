@@ -212,6 +212,10 @@
   .template-card:active{transform:translateY(1px) scale(.975);}
   .template-card:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
   .template-card.selected{outline:3px solid var(--template-accent);outline-offset:2px;background:var(--paper-deep);}
+  .template-card[data-template-theme="hamin"]::before{content:"NEW ✦";position:absolute;top:-8px;right:-8px;z-index:2;
+    padding:3px 8px;border:1.5px solid var(--green);border-radius:999px;background:#e7f1df;color:var(--ink);
+    box-shadow:1px 2px 0 rgba(43,45,66,.14);font-family:'Gaegu',cursive;font-size:.72rem;font-weight:700;
+    line-height:1.1;letter-spacing:.25px;white-space:nowrap;pointer-events:none;}
   .template-card[data-template-theme="anniversary"].selected{position:relative;outline-color:transparent;}
   .template-card[data-template-theme="anniversary"].selected::after{content:"";position:absolute;inset:-5px;
     padding:3px;border-radius:19px;pointer-events:none;
@@ -227,10 +231,6 @@
   /* ---- Coming Soon (locked/unavailable) template card ---- */
   .template-card.locked{cursor:default;background:
     repeating-linear-gradient(135deg, var(--paper) 0 10px, var(--paper-deep) 10px 20px);}
-  .template-card.locked[data-id="template-c"]::before{content:"COMING SOON ✦";position:absolute;z-index:3;top:-7px;right:-7px;
-    padding:2px 6px;border:1.4px solid rgba(43,45,66,.62);border-radius:999px;background:#d8e8d0;
-    color:var(--ink);font-family:'Gaegu',cursive;font-size:.58rem;font-weight:700;line-height:1.15;
-    letter-spacing:.025em;white-space:nowrap;box-shadow:1.5px 2px 0 rgba(43,45,66,.12);pointer-events:none;}
   .template-card.locked:active{transform:none;}
   .coming-soon-thumb{position:relative;width:100%;border-radius:6px;overflow:hidden;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
@@ -1111,15 +1111,14 @@
       name: 'Last Dance with Hamin',
       subtitle: '4 shots',
       shots: 4,
-      layout: 'stack4',
-      frameMask: './assets/template-c/frame.png',
+      layout: 'hamincse',
+      frameMask: './assets/lastdance/frame.png',
       poses: [
-        './assets/template-c/pose1.png',
-        './assets/template-c/pose2.png',
-        './assets/template-c/pose3.png',
-        './assets/template-c/pose4.png'
-      ],
-      comingSoon: true // reserved slot — assets not uploaded yet
+        './assets/lastdance/pose-1.png',
+        './assets/lastdance/pose-2.png',
+        './assets/lastdance/pose-3.png',
+        './assets/lastdance/pose-4.png'
+      ]
     },
     {
       id: 'template-d',
@@ -1240,10 +1239,8 @@
     // at the wrong ratio and reintroduce the exact offset/zoom bug we fixed for the 4-cut stack.
     var cut = currentCutSize();
     boothFrameWrap.style.aspectRatio = cut.w + ' / ' + cut.h;
-    // the die-cut frame warning applies to templates with hand-measured, non-rectangular cutouts
-    // (3rd Anniversary Frame's hearts, Bamline's Gathering's heart window + icon/ribbon notches) —
-    // plain stack4 templates use even rectangular cuts and don't need the warning.
-    frameNotice.classList.toggle('show', selectedTemplate.layout === 'grid2x3' || selectedTemplate.layout === 'bambyframe' || selectedTemplate.layout === 'yejunframe');
+    // Reuse the existing die-cut notice for frames with non-rectangular openings.
+    frameNotice.classList.toggle('show', selectedTemplate.layout === 'grid2x3' || selectedTemplate.layout === 'bambyframe' || selectedTemplate.layout === 'yejunframe' || selectedTemplate.layout === 'hamincse');
     showScene('booth');
     startCamera();
   });
@@ -1553,6 +1550,19 @@
           { x: 60, y: 605,  w: 699, h: 437, photoOffsetX: 0, photoOffsetY: 0 },
           { x: 50, y: 1113, w: 699, h: 437, photoOffsetX: 0, photoOffsetY: 0 },
           { x: 50, y: 1626, w: 699, h: 437, photoOffsetX: 0, photoOffsetY: 0 }
+        ];
+      }
+    },
+    // Last Dance with Hamin — photo slots matched against each exported overlay
+    // at its native 698×433 viewport ratio, in the 800×2400 frame coordinates.
+    hamincse: {
+      canvasW: 800, canvasH: 2400,
+      rects: function(){
+        return [
+          { x: 49, y: 90,   w: 698, h: 433 },
+          { x: 49, y: 604,  w: 698, h: 433 },
+          { x: 49, y: 1118, w: 698, h: 433 },
+          { x: 49, y: 1631, w: 698, h: 433 }
         ];
       }
     }
@@ -2079,7 +2089,8 @@
       'template-d':'noahs-gym-club',
       'plave-3rd-anniv':'reves-in-my-ast3rum',
       'template-a':'bamlines-gathering',
-      'template-b':'whisper-from-the-deep-blue'
+      'template-b':'whisper-from-the-deep-blue',
+      'template-c':'last-dance-with-hamin'
     };
     var templateSlug = selectedTemplate ? (slugs[selectedTemplate.id] || selectedTemplate.id) : 'strip';
     var date = new Date().toISOString().slice(0,10);
